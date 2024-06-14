@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - CompareKart{% endblock %}
+
+{% block content %}
+    <section class="search-section">
+        <h2>Search Products</h2>
+        <input type="text" id="searchInput" placeholder="Search for products...">
+        <button onclick="searchProducts()">Search</button>
+    </section>
+    <section id="productList" class="product-list"></section>
+{% endblock %}
