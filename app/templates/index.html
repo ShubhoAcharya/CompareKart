@@ -1,12 +1,77 @@
-{% extends 'base.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparekart</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <h1>Comparekart</h1>
+        </div>
+        <div class="search-container">
+            <input type="text" id="searchQuery" placeholder="Search for products, brands and more">
+            <button id="searchButton"><i class="fas fa-search"></i></button>
+        </div>
+        <div class="social-media">
+            <a href="#"><i class="fab fa-facebook-f"></i></a>
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-linkedin-in"></i></a>
+        </div>
+    </header>
+    <nav class="category-drawer">
+        <ul>
+            <li><a href="#"><i class="fas fa-laptop"></i> Electronics</a></li>
+            <li><a href="#"><i class="fas fa-tv"></i> TVs & Appliances</a></li>
+            <li><a href="#"><i class="fas fa-male"></i> Men</a></li>
+            <li><a href="#"><i class="fas fa-female"></i> Women</a></li>
+            <li><a href="#"><i class="fas fa-baby"></i> Baby & Kids</a></li>
+            <li><a href="#"><i class="fas fa-couch"></i> Home & Furniture</a></li>
+            <li><a href="#"><i class="fas fa-football-ball"></i> Sports, Books & More</a></li>
+            <li><a href="#"><i class="fas fa-plane"></i> Flights</a></li>
+            <li><a href="#"><i class="fas fa-tags"></i> Offer Zone</a></li>
+            <li><a href="#"><i class="fas fa-shopping-basket"></i> Grocery</a></li>
+        </ul>
+    </nav>
+    <main>
+        <h2>Welcome to Comparekart</h2>
+        <p>Your one-stop destination for comparing the best products.</p>
+        <div class="productURL">
+            <input type="text" id="productURL" placeholder="Enter the product URL">
+            <button id="product">Compare</button>
+        </div>
+        <div class="card-container">
+            <div class="moving-card">
+                <div class="card-logo flipkart lazyload" data-src="https://logo.clearbit.com/flipkart.com"></div>
+                <div class="card-logo amazon lazyload" data-src="https://logo.clearbit.com/amazon.com"></div>
+                <div class="card-logo myntra lazyload" data-src="https://logo.clearbit.com/myntra.com"></div>
+                <div class="card-logo lg lazyload" data-src="https://logo.clearbit.com/lg.com"></div>
+                <div class="card-logo apple lazyload" data-src="https://logo.clearbit.com/apple.com"></div>
+                <div class="card-logo xiaomi lazyload" data-src="https://logo.clearbit.com/mi.com"></div>
+                <div class="card-logo dell lazyload" data-src="https://logo.clearbit.com/dell.com"></div>
+                <div class="card-logo pg lazyload" data-src="https://logo.clearbit.com/us.pg.com"></div>
+                <div class="card-logo unilever lazyload" data-src="https://logo.clearbit.com/unilever.com"></div>
+                <div class="card-logo nestle lazyload" data-src="https://logo.clearbit.com/nestle.com"></div>
+                <div class="card-logo pepsico lazyload" data-src="https://logo.clearbit.com/pepsico.com"></div>
+                <div class="card-logo casio lazyload" data-src="https://logo.clearbit.com/casio.com"></div>
+                <div class="card-logo rayban lazyload" data-src="https://logo.clearbit.com/ray-ban.com"></div>
+                <div class="card-logo gucci lazyload" data-src="https://logo.clearbit.com/gucci.com"></div>
+                <div class="card-logo nike lazyload" data-src="https://logo.clearbit.com/nike.com"></div>
+                <div class="card-logo adidas lazyload" data-src="https://logo.clearbit.com/adidas.com"></div>
+                <div class="card-logo calvinklein lazyload" data-src="https://logo.clearbit.com/calvinklein.com"></div>
+                <div class="card-logo tommyhilfiger lazyload" data-src="https://logo.clearbit.com/tommy.com"></div>
+                <div class="card-logo zara lazyload" data-src="https://logo.clearbit.com/zara.com"></div>
+            </div>
+        </div>
+    </main>
+    <footer>
+        <p>&copy; 2024 Comparekart. All rights reserved.</p>
+    </footer>
 
-{% block title %}Home - CompareKart{% endblock %}
-
-{% block content %}
-    <section class="search-section">
-        <h2>Search Products</h2>
-        <input type="text" id="searchInput" placeholder="Search for products...">
-        <button onclick="searchProducts()">Search</button>
-    </section>
-    <section id="productList" class="product-list"></section>
-{% endblock %}
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

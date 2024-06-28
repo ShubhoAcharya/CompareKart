@@ -1,32 +1,44 @@
-const products = [
-    { id: 1, name: 'iPhone 13', price: '₹79,900', features: ['128GB Storage', 'A15 Bionic Chip'], website: 'Amazon' },
-    { id: 2, name: 'Samsung Galaxy S21', price: '₹69,999', features: ['128GB Storage', 'Exynos 2100'], website: 'Flipkart' },
-    { id: 3, name: 'OnePlus 9 Pro', price: '₹64,999', features: ['256GB Storage', 'Snapdragon 888'], website: 'Snapdeal' },
-    { id: 4, name: 'Sony WH-1000XM4', price: '₹29,990', features: ['Noise Cancelling', '30 Hours Battery'], website: 'Amazon' },
-    { id: 5, name: 'Dell XPS 13', price: '₹1,49,999', features: ['11th Gen Intel i7', '16GB RAM'], website: 'Croma' }
-];
-
-function searchProducts() {
-    const searchInput = document.getElementById('searchInput').value.toLowerCase();
-    const filteredProducts = products.filter(product => 
-        product.name.toLowerCase().includes(searchInput) || 
-        product.features.some(feature => feature.toLowerCase().includes(searchInput))
-    );
-    displayProducts(filteredProducts);
-}
-
-function displayProducts(products) {
-    const productList = document.getElementById('productList');
-    productList.innerHTML = '';
-    products.forEach(product => {
-        const productElement = document.createElement('div');
-        productElement.className = 'product';
-        productElement.innerHTML = `
-            <h3>${product.name}</h3>
-            <p class="price">${product.price}</p>
-            <p>Features: ${product.features.join(', ')}</p>
-            <p>Website: ${product.website}</p>
-        `;
-        productList.appendChild(productElement);
+document.addEventListener("DOMContentLoaded", function() {
+    var lazyloadImages = document.querySelectorAll(".lazyload");
+    var imageObserver = new IntersectionObserver(function(entries, observer) {
+        entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+                var image = entry.target;
+                image.style.backgroundImage = "url('" + image.getAttribute("data-src") + "')";
+                image.classList.remove("lazyload");
+                imageObserver.unobserve(image);
+            }
+        });
     });
-}
+
+    lazyloadImages.forEach(function(image) {
+        imageObserver.observe(image);
+    });
+});
+
+document.addEventListener("DOMContentLoaded", function() {
+    var searchButton = document.getElementById("searchButton");
+
+    searchButton.addEventListener("click", function() {
+        var searchQuery = document.getElementById("searchQuery").value;
+        fetch('/search', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ query: searchQuery }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            var resultsDiv = document.getElementById("results");
+            resultsDiv.innerHTML = `
+                <p>Flipkart: <a href="${data.flipkart_link}" target="_blank">${data.flipkart_link}</a></p>
+                <p>Amazon: <a href="${data.amazon_link}" target="_blank">${data.amazon_link}</a></p>
+            `;
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+    });
+});
+
