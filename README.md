@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 "# CompareKart"
 
 Abstract for CompareKart Project
@@ -26,3 +27,4 @@ The project envisions expanding its capabilities to include more e-commerce plat
 
 Conclusion:
 CompareKart is a pioneering effort to simplify the e-commerce shopping experience by providing a powerful product comparison tool. With its user-centric design and robust technology stack, CompareKart stands poised to become an indispensable tool for online shoppers, saving them time and money while ensuring they get the best deals available.
+=======
