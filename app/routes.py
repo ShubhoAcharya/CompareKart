@@ -1,11 +1,9 @@
-from flask import Blueprint, render_template, request, jsonify
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.chrome.options import Options
-import time
+from flask import Flask, Blueprint, render_template, request, jsonify
+import pandas as pd
+from .Amazon_search_product import search_amazon
+from .Flipkart_search_product import search_flipkart_product
+import json
+import os
 
 main = Blueprint('main', __name__)
 
@@ -13,68 +11,48 @@ main = Blueprint('main', __name__)
 def index():
     return render_template('index.html')
 
+@main.route('/compare', methods=['GET'])
+def compare():
+    # Load the product URLs from the file
+    urls_file = './product_urls.json'
+    if os.path.exists(urls_file):
+        with open(urls_file, 'r') as f:
+            product_urls = json.load(f)
+    else:
+        product_urls = {
+            'amazon_link': '',
+            'flipkart_link': ''
+        }
+    
+    csv_file = './product_comparison.csv'  # Update this path accordingly
+    df = pd.read_csv(csv_file)
+    headers = list(df.columns)
+    rows = df.values.tolist()
+    
+    return jsonify({
+        'headers': headers,
+        'rows': rows,
+        'product_urls': product_urls
+    })
+
 @main.route('/search', methods=['POST'])
 def search():
     data = request.json
-    query = data['query']
-    
-    flipkart_link = search_flipkart(query)
-    amazon_link = search_amazon(query)
-    
-    return jsonify({
-        'flipkart_link': flipkart_link,
-        'amazon_link': amazon_link
-    })
+    product_name = data.get('query')
 
-def create_driver():
-    options = Options()
-    options.headless = True
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
-    service = Service(ChromeDriverManager().install())
-    driver = webdriver.Chrome(service=service, options=options)
-    return driver
+    # Search on Amazon
+    amazon_url = search_amazon(product_name)
+    
+    # Search on Flipkart
+    flipkart_url = search_flipkart_product(product_name)
 
-def search_flipkart(product_name):
-    driver = create_driver()
-    driver.get('https://www.flipkart.com/')
-    
-    try:
-        close_button = driver.find_element(By.XPATH, '//button[text()="✕"]')
-        close_button.click()
-    except:
-        pass
+    # Save the URLs to a file
+    urls_file = './product_urls.json'
+    product_urls = {
+        'amazon_link': amazon_url,
+        'flipkart_link': flipkart_url
+    }
+    with open(urls_file, 'w') as f:
+        json.dump(product_urls, f)
 
-    search_input = driver.find_element(By.NAME, 'q')
-    search_input.send_keys(product_name)
-    search_input.send_keys(Keys.RETURN)
-    
-    time.sleep(5)
-    product_links = driver.find_elements(By.CSS_SELECTOR, 'a[href*="/p/"]')
-    product_link = None
-    for link in product_links:
-        if "sponsored" not in link.get_attribute('href'):
-            product_link = link.get_attribute('href')
-            break
-    
-    driver.quit()
-    return product_link
-
-def search_amazon(product_name):
-    driver = create_driver()
-    driver.get('https://www.amazon.in/')
-    
-    search_input = driver.find_element(By.ID, 'twotabsearchtextbox')
-    search_input.send_keys(product_name)
-    search_input.send_keys(Keys.RETURN)
-    
-    time.sleep(5)
-    product_links = driver.find_elements(By.CSS_SELECTOR, 'a.a-link-normal.s-underline-text.s-underline-link-text.s-link-style.a-text-normal')
-    product_link = None
-    for link in product_links:
-        if "sponsored" not in link.get_attribute('href'):
-            product_link = link.get_attribute('href')
-            break
-    
-    driver.quit()
-    return product_link
+    return jsonify(product_urls)

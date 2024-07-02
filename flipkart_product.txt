@@ -1,51 +1,17 @@
-Product Name: realme RMX3869 (Glass Gold, 128 GB)(8 GB RAM)
-Price: ₹17,653
-Description: Realme Narzo 70 Pro 5G mobile comes with 6nm octa-core MediaTek Dimensity chipset and 2x In-Sensor Zoom, Ultra Steady Video, Ultra Steady Max Video, Night Mode, Panoramic View, Expert, Timelapse, HDR, Ultra-wide, Ultra Macro, AI Scene Recognition, AI Beauty, Filter, Slow Motion, Bokeh Effect Control
-Rating: 4.2 (214 Ratings&17 Reviews)
-Delivery Time: 1 Jul, Monday
+Product Name: realme NARZO 70X 5G (ICE BLUE, 128 GB)(6 GB RAM)
+Price: ₹12,635
+Description: The phone comes with a 6.72-inch touchscreen display offering a resolution of 2400x1080 pixels (FHD+). It comes with 4GB, 6GB of RAM. The Realme Narzo 70x 5G runs Android 14 and is powered by a 5000mAh battery. The Realme Narzo 70x 5G supports Super VOOC fast charging.
+
+As far as the cameras are concerned, the Realme Narzo 70x 5G on the rear packs a dual camera setup featuring a 50-megapixel primary camera, and a 2-megapixel camera. It has a single front camera setup for selfies, featuring an 8-megapixel sensor.
+
+The Realme Narzo 70x 5G runs Realme UI 5.1 is based on Android 14 and packs 128GB of inbuilt storage (up to 2000GB). It features an IP54 rating for dust and water protection.
+
+Connectivity options on the Realme Narzo 70x 5G include Wi-Fi, GPS, Bluetooth v5.20, and USB Type-C with active 4G on both SIM cards. Sensors on the phone include temperature sensor and in-display fingerprint sensor.
+Rating: 4.3 (684 Ratings&30 Reviews)
+Delivery Time: 4 Jul, Thursday
 Specifications:
-  - In The Box: Phone, Data cable, SIM ejector tool, Protective case, Quick Guide
-  - Model Number: Narzo 70 Pro 5G
-  - Model Name: RMX3869
-  - Color: Glass Gold
-  - Browse Type: Smartphones
-  - SIM Type: Dual Sim
-  - Hybrid Sim Slot: Yes
-  - Touchscreen: Yes
-  - OTG Compatible: Yes
-  - Quick Charging: Yes
-  - Display Size: 16.94 cm (6.67 inch)
-  - Resolution: 2400x1080 pixels
-  - Display Type: Color AMOLED Screen (16.7M)
-  - Operating System: Android Android 14
-  - Processor Brand: Mediatek
-  - Processor Core: Octa Core
-  - Primary Clock Speed: 2.6 GHz
-  - Internal Storage: 128 GB
-  - RAM: 8 GB
-  - Memory Card Slot Type: Dedicated Slot
-  - Primary Camera Available: Yes
-  - Primary Camera: 50MP Rear Camera
-  - Secondary Camera Available: Yes
-  - Secondary Camera: 16MP Front Camera
-  - Dual Camera Lens: Primary Camera
-  - Network Type: 5G
-  - Supported Networks: 4G VoLTE, 4G LTE
-  - GPRS: Yes
-  - Bluetooth Support: Yes
-  - Bluetooth Version: V 5.20
-  - Wi-Fi: Yes
-  - Wi-Fi Version: Support 802.11 a/b/g/n/ac/ax (Wi-Fi 6)
-  - Wi-Fi Hotspot: Yes
-  - USB Tethering: Yes
-  - USB Connectivity: Yes
-  - GPS Support: Yes
-  - Smartphone: Yes
-  - Removable Battery: No
-  - MMS: Yes
-  - SMS: Yes
-  - Sensors: Magnetic Induction Sensor, Light sensor, Proximity Sensor, Gyro-meter, Acceleration Sensor, Compass
-  - FM Radio: No
-  - Battery Capacity: 5000 mAh
-  - Battery Type: Non-Removable Battery
-  - Warranty Summary: 1 Year Domestic Warranty for Phone and 6 Months Warranty for In-Box Accessories
+  - Whats in the box: Phone, Data cable, SIM ejector tool, Protective case, Quick Guide
+  - Colour: ICE BLUE
+  - OS: Android ANDROID 14
+  - RAM: 6 GB
+  - Battery Power Rating: 5000 mAh

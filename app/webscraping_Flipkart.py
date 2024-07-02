@@ -24,10 +24,6 @@ def scrape_flipkart_product(url):
             print("Failed to retrieve the webpage after multiple attempts.")
             return None
         
-        # Log the response content for debugging
-        with open("page_content.html", "w", encoding="utf-8") as f:
-            f.write(response.text)
-        
         # Parse the HTML content
         soup = BeautifulSoup(response.content, 'html.parser')
         
@@ -40,7 +36,7 @@ def scrape_flipkart_product(url):
         product_price = product_price_tag.get_text(strip=True) if product_price_tag else "No price found"
         
         # Extract the product description (if available)
-        description_tag = soup.find('div', class_='_4gvKMe')  # Adjust the class as needed based on actual HTML
+        description_tag = soup.find('div', class_='_4gvKMe')
         product_description = description_tag.get_text(strip=True) if description_tag else "No description available"
         
         # Extract the product rating
@@ -77,8 +73,8 @@ def scrape_flipkart_product(url):
                     value = cols[1].get_text(strip=True)
                     specifications[key] = value
 
-        # Returning the extracted data
-        product_data = {
+        # Returning the extracted data as a dictionary
+        return {
             'Product Name': product_name,
             'Price': product_price,
             'Description': product_description,
@@ -86,8 +82,6 @@ def scrape_flipkart_product(url):
             'Delivery Time': delivery_time,
             'Specifications': specifications
         }
-        
-        return product_data
 
     except requests.exceptions.RequestException as e:
         print(f"Request failed: {e}")
@@ -96,14 +90,30 @@ def scrape_flipkart_product(url):
         print(f"Failed to parse the HTML: {e}")
         return None
 
+def save_to_file(data, filename='flipkart_product.txt'):
+    try:
+        with open(filename, 'w', encoding='utf-8') as file:
+            file.write(f"Product Name: {data['Product Name']}\n")
+            file.write(f"Price: {data['Price']}\n")
+            file.write(f"Description: {data['Description']}\n")
+            file.write(f"Rating: {data['Rating']}\n")
+            file.write(f"Delivery Time: {data['Delivery Time']}\n")
+            file.write("Specifications:\n")
+            file.write(f"  - Whats in the box: {data['Specifications'].get('In The Box', 'N/A')}\n")
+            file.write(f"  - Colour: {data['Specifications'].get('Color', 'N/A')}\n")
+            file.write(f"  - OS: {data['Specifications'].get('Operating System', 'N/A')}\n")
+            file.write(f"  - RAM: {data['Specifications'].get('RAM', 'N/A')}\n")
+            file.write(f"  - Battery Power Rating: {data['Specifications'].get('Battery Capacity', 'N/A')}\n")
+        print(f"Data saved to {filename}")
+    except IOError as e:
+        print(f"Failed to write to file: {e}")
+
 # URL of the Flipkart product
-url = 'https://www.flipkart.com/realme-narzo-70-pro-5g-glass-gold-128-gb/p/itm5f12ccbe8d955?pid=MOBGZ5M6PATZHMTP&lid=LSTMOBGZ5M6PATZHMTPRDHNL5&marketplace=FLIPKART&q=realme%20narzo%2070%20pro&sattr[]=color&sattr[]=storage&st=color'
+url = 'https://www.flipkart.com/realme-narzo-70x-5g-ice-blue-128-gb/p/itm4ef66169ea11b?pid=MOBHYCWQUSWGF6FT&lid=LSTMOBHYCWQUSWGF6FTEN3MHN&marketplace=FLIPKART&q=narzo+70+5g&store=tyy%2F4io&srno=s_1_1&otracker=search&otracker1=search&fm=organic&iid=76f11829-a833-44c9-9969-20b3f845bdc0.MOBHYCWQUSWGF6FT.SEARCH&ppt=hp&ppn=homepage&ssid=ru3j7r785c0000001719549384529&qH=a972efa0bd6da8dd'
 
 # Scrape the product data
 product_data = scrape_flipkart_product(url)
 
-# Print the extracted data
+# Save the extracted data to a file
 if product_data:
-    print("Product Data:")
-    for key, value in product_data.items():
-        print(f"{key}: {value}")
+    save_to_file(product_data, filename='flipkart_product.txt')

@@ -6,6 +6,8 @@
     <title>Comparekart</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
     <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
@@ -19,8 +21,9 @@
         </div>
         <div class="social-media">
             <a href="#"><i class="fab fa-facebook-f"></i></a>
-            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fa-brands fa-x-twitter"></i></a>
             <a href="#"><i class="fab fa-linkedin-in"></i></a>
+            <a href="#"><i class="fab fa-github"></i></a>
         </div>
     </header>
     <nav class="category-drawer">
@@ -44,6 +47,12 @@
             <input type="text" id="productURL" placeholder="Enter the product URL">
             <button id="product">Compare</button>
         </div>
+        
+        <div id="loader"></div>
+        <div id="results"></div>
+        <div id="comparisonTable"></div>
+        
+
         <div class="card-container">
             <div class="moving-card">
                 <div class="card-logo flipkart lazyload" data-src="https://logo.clearbit.com/flipkart.com"></div>
