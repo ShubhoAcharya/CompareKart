@@ -1,3 +1,4 @@
+import json
 import requests
 from bs4 import BeautifulSoup
 import time
@@ -104,12 +105,14 @@ def save_to_file(data, filename='amazon_product.txt'):
     except IOError as e:
         print(f"Failed to write to file: {e}")
 
-# URL of the Amazon product
-url = 'https://www.amazon.in/Acer-i3-1215U-Premium-Windows-AL15-52/dp/B0CKLN7PSZ/ref=sr_1_3?crid=DX4S7Q2DSZUJ&dib=eyJ2IjoiMSJ9.OEYfzYNd95GjvreCKceOJ008dur1IM5JPY5FZYdz6VS3CDDxRMH-Ju8J9yE9h7-Kf18OCXnNTUV-N2huc0s6pPJFacUOFK3od3T6ZGs_zvlo8OO9Q2xsZPn8AeW0T5NMppKj2CWoaXO2XtYzSfN7FLnnrb4jQo_O3qxrRCHCR_gvxqVqU0_ZPV3ssSlVDNv7OOcmNuJgCRHow6aNh_4fjFQNkzb15YkTvGHycGd0L2k.5Gcsn15ZzxJzIZQKIjZ7SNjdhGjSTVFLXLwebN6gQzo&dib_tag=se&keywords=acer%2Blaptop&qid=1719638112&sprefix=acer%2Caps%2C230&sr=8-3&th=1'  # Example URL, replace with actual product URL
+if __name__ == "__main__":
+    with open('product_urls.json', 'r') as f:
+        product_urls = json.load(f)
+    url = product_urls.get('amazon_link', '')
+    
+    # Scrape the product data
+    product_data = scrape_amazon_product(url)
 
-# Scrape the product data
-product_data = scrape_amazon_product(url)
-
-# Save the extracted data to a file
-if product_data:
-    save_to_file(product_data)
+    # Save the extracted data to a file
+    if product_data:
+        save_to_file(product_data, filename='amazon_product.txt')

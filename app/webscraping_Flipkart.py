@@ -1,3 +1,4 @@
+import json
 import requests
 from bs4 import BeautifulSoup
 import time
@@ -109,11 +110,14 @@ def save_to_file(data, filename='flipkart_product.txt'):
         print(f"Failed to write to file: {e}")
 
 # URL of the Flipkart product
-url = 'https://www.flipkart.com/realme-narzo-70x-5g-ice-blue-128-gb/p/itm4ef66169ea11b?pid=MOBHYCWQUSWGF6FT&lid=LSTMOBHYCWQUSWGF6FTEN3MHN&marketplace=FLIPKART&q=narzo+70+5g&store=tyy%2F4io&srno=s_1_1&otracker=search&otracker1=search&fm=organic&iid=76f11829-a833-44c9-9969-20b3f845bdc0.MOBHYCWQUSWGF6FT.SEARCH&ppt=hp&ppn=homepage&ssid=ru3j7r785c0000001719549384529&qH=a972efa0bd6da8dd'
+if __name__ == "__main__":
+    with open('product_urls.json', 'r') as f:
+        product_urls = json.load(f)
+    url = product_urls.get('flipkart_link', '')
+    
+    # Scrape the product data
+    product_data = scrape_flipkart_product(url)
 
-# Scrape the product data
-product_data = scrape_flipkart_product(url)
-
-# Save the extracted data to a file
-if product_data:
-    save_to_file(product_data, filename='flipkart_product.txt')
+    # Save the extracted data to a file
+    if product_data:
+        save_to_file(product_data, filename='flipkart_product.txt')
