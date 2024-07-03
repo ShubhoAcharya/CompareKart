@@ -1,17 +1,11 @@
-Product Name: realme NARZO 70X 5G (ICE BLUE, 128 GB)(6 GB RAM)
-Price: ₹12,635
-Description: The phone comes with a 6.72-inch touchscreen display offering a resolution of 2400x1080 pixels (FHD+). It comes with 4GB, 6GB of RAM. The Realme Narzo 70x 5G runs Android 14 and is powered by a 5000mAh battery. The Realme Narzo 70x 5G supports Super VOOC fast charging.
-
-As far as the cameras are concerned, the Realme Narzo 70x 5G on the rear packs a dual camera setup featuring a 50-megapixel primary camera, and a 2-megapixel camera. It has a single front camera setup for selfies, featuring an 8-megapixel sensor.
-
-The Realme Narzo 70x 5G runs Realme UI 5.1 is based on Android 14 and packs 128GB of inbuilt storage (up to 2000GB). It features an IP54 rating for dust and water protection.
-
-Connectivity options on the Realme Narzo 70x 5G include Wi-Fi, GPS, Bluetooth v5.20, and USB Type-C with active 4G on both SIM cards. Sensors on the phone include temperature sensor and in-display fingerprint sensor.
-Rating: 4.3 (684 Ratings&30 Reviews)
-Delivery Time: 6 Jul, Saturday
+Product Name: Apple iPhone 15 (Black, 128 GB)
+Price: ₹64,999
+Description: Experience the iPhone 15 – your dynamic companion. Dynamic Island ensures you stay connected, bubbling up alerts seamlessly while you're busy. Its durable design features infused glass and aerospace-grade aluminum, making it dependable and resistant to water and dust. Capture life with precision using the 48 MP Main Camera, perfect for any shot. Powered by the A16 Bionic Processor, it excels in computational photography and more, all while conserving battery life. Plus, it's USB-C compatible, simplifying your charging needs. Elevate your tech game with the iPhone 15 – innovation at your fingertips. Goodbye cable clutter, hello convenience.
+Rating: 4.6 (39,394 Ratings&2,176 Reviews)
+Delivery Time: 7 Jul, Sunday
 Specifications:
-  - Whats in the box: Phone, Data cable, SIM ejector tool, Protective case, Quick Guide
-  - Colour: ICE BLUE
-  - OS: Android ANDROID 14
-  - RAM: 6 GB
-  - Battery Power Rating: 5000 mAh
+  - Whats in the box: Handset, USB C Charge Cable (1m), Documentation
+  - Colour: Black
+  - OS: iOS 17
+  - RAM: N/A
+  - Battery Power Rating: N/A
