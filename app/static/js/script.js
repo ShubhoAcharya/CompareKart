@@ -112,3 +112,39 @@ function generateTable(data) {
     table += '</tbody></table>';
     return table;
 }
+
+
+var urlButton = document.getElementById("urlButton");
+    urlButton.addEventListener("click", function() {
+        var productURL = document.getElementById("productURL").value;
+        fetch('/save_url', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ url: productURL }),
+        })
+        .then(response => {
+            if (response.ok) {
+                console.log("URL saved successfully");
+                fetch('/check_url', {
+                    method: 'POST',
+                })
+                .then(response => {
+                    if (response.ok) {
+                        console.log("URL checked successfully");
+                    } else {
+                        console.error('Error checking URL');
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+            } else {
+                console.error('Error saving URL');
+            }
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+    });

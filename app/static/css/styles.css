@@ -215,7 +215,7 @@ footer {
 .productURL {
     margin-top: 40px;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
 }
 
@@ -241,7 +241,7 @@ footer {
     color: white;
     border: none;
     border-radius: 30px;
-    margin-left: 10px;
+    margin-top: 10px; /* Changed from margin-left to margin-top */
     transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }

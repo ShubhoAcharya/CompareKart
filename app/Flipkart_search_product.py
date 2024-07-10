@@ -9,6 +9,7 @@ from selenium.webdriver.support import expected_conditions as EC
 def search_flipkart_product(product_name):
     # Initialize the WebDriver
     driver = webdriver.Chrome()  # Make sure you have the ChromeDriver installed and added to PATH
+    driver.maximize_window()
     driver.get("https://www.flipkart.com")
 
     # Close the login popup if it appears

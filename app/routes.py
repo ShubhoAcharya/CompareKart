@@ -1,5 +1,7 @@
 from flask import Flask, Blueprint, render_template, request, jsonify
 import pandas as pd
+
+from app.url_checker import check_and_update_url
 from .Amazon_search_product import search_amazon
 from .Flipkart_search_product import search_flipkart_product
 import json
@@ -10,6 +12,22 @@ main = Blueprint('main', __name__)
 @main.route('/')
 def index():
     return render_template('index.html')
+
+@main.route('/save_url', methods=['POST'])
+def save_url():
+    data = request.json
+    product_url = data['url']
+    with open('product_URL_check.txt', 'w') as f:
+        f.write(product_url)
+    return '', 204
+
+@main.route('/check_url', methods=['POST'])
+def check_url():
+    with open('product_URL_check.txt', 'r') as f:
+        product_url = f.read()
+    check_and_update_url(product_url)
+    return '', 204
+
 
 @main.route('/compare', methods=['GET'])
 def compare():
