@@ -1,4 +1,4 @@
-#!C:\Users\Shubh\Dropbox\CompareKart\myenv\Scripts\python.exe
+#!C:\Users\Shubh\OneDrive\Desktop\CompareKart\myenv\Scripts\python.exe
 
 import sys
 import json
