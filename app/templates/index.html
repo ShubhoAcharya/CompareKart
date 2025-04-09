@@ -6,15 +6,13 @@
     <title>Comparekart</title>
     <link rel="icon" type="image/x-icon" href="../static/images/cart_4628369.png">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
-    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     <header>
-        <div class="logo">
-            <h1>Comparekart</h1>
+        <div class="logo-container">
+            <img src="../static/images/Gemini_Generated_Image_89v76g89v76g89v7.jpg" alt="Comparekart Logo" class="logo-image">
         </div>
         <div class="search-container">
             <input type="text" id="searchQuery" placeholder="Search for products, brands and more">
@@ -49,11 +47,11 @@
             <button id="urlButton"><i class="fas fa-arrow-right"></i></button>
             <button id="product">Compare</button>
         </div>
-        
+
         <div id="loader"></div>
         <div id="results"></div>
         <div id="comparisonTable"></div>
-        
+
 
         <div class="card-container">
             <div class="moving-card">
@@ -79,6 +77,54 @@
             </div>
         </div>
     </main>
+    <section class="step-section">
+        <h2>Step by Step Process to Check Price History</h2>
+        <p class="subtitle">Find the right price of any product using just 2 simple steps</p>
+        <div class="step-cards">
+          <div class="step-card">
+            <div class="step-icon">🛍️</div>
+            <div class="step-title">Step 1</div>
+            <div class="step-desc">
+              Just copy and paste the link of any product from online stores like Flipkart or Amazon in the search bar above.
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-icon">📉</div>
+            <div class="step-title">Step 2</div>
+            <div class="step-desc">
+              Discover its price history, find the lowest price, and set up alerts for price drops.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="review-section">
+        <h2>Over 2.6 Lakh Happy Users</h2>
+        <p class="subheading">Rated 4.7 Stars — The Most Trusted Online Shopping Tool</p>
+
+        <div class="review-cards">
+          <div class="review-card">
+            <p class="review-text">Getting notified by email when prices drop is the best feature!</p>
+            <div class="review-author">— Srikar</div>
+            <div class="stars">★★★★★</div>
+          </div>
+
+          <div class="review-card">
+            <p class="review-text">Excellent Extension 👋 Kudos to the developer, you saved me few 1000 rupees</p>
+            <div class="review-author">— Ravikumar</div>
+            <div class="stars">★★★★★</div>
+          </div>
+
+          <div class="review-card">
+            <p class="review-text">Saved me spending 700 bucks extra on Amazon</p>
+            <div class="review-author">— S Jaiswal</div>
+            <div class="stars">★★★★☆
+            </div>
+          </div>
+        </div>
+      </section>
+
+
     <footer>
         <p>&copy; 2024 Comparekart. All rights reserved.</p>
     </footer>

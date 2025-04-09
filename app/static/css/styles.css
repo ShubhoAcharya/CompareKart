@@ -1,44 +1,97 @@
-/* Reset default margin, padding, and set box-sizing */
-* {
+/* 🎨 Modern Variables */
+:root {
+    --primary: #4f46e5;       /* Indigo-600 */
+    --primary-dark: #4338ca;  /* Indigo-700 */
+    --accent: #a855f7;        /* Purple-500 */
+    --bg: #f9fafb;            /* Light Gray */
+    --text: #1f2937;          /* Gray-800 */
+    --light-text: #6b7280;    /* Gray-500 */
+    --card-bg: #ffffff;
+    --card-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+    --transition: all 0.3s ease;
+}
+
+/* 🧼 Reset & Base */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
 }
 
-/* Body styles */
+html {
+    font-size: 16px;
+    scroll-behavior: smooth;
+}
+
 body {
-    font-family: 'Roboto', Arial, sans-serif;
-    background-color: #f4f4f4;
-    line-height: 1.6;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
-/* Global typography */
+/* 🧾 Typography */
 h1, h2, h3, h4, h5, h6 {
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 700;
-    margin: 0;
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.3;
+    margin-bottom: 0.75rem;
 }
+
+h1 { font-size: 2.5rem; }
+h2 { font-size: 2rem; }
 
 p {
-    margin: 0;
+    font-size: 1rem;
+    color: var(--light-text);
+    margin-bottom: 1rem;
 }
 
-/* Header styles */
+a {
+    color: var(--primary);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+a:hover {
+    color: var(--primary-dark);
+}
+
+/* 🧭 Header */
 header {
-    background-color: #2874f0;
-    color: white;
-    padding: 10px 20px;
+    background-color: #fff;
+    color: var(--text);
+    padding: 1.2rem 2rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--card-shadow);
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
-.logo h1 {
-    font-size: 1.5rem;
+.logo-container {
+    display: flex;
+    align-items: center;
 }
 
-/* Search container styles */
+.logo-image {
+    height: 40px;
+    margin-right: 0.8rem;
+}
+
+.logo-container h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+}
+
+/* 🔍 Search */
 .search-container {
     width: 50%;
     display: flex;
@@ -52,7 +105,8 @@ header {
     border-radius: 20px;
     font-size: 1rem;
     outline: none;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    background: #fff;
+    box-shadow: var(--card-shadow);
 }
 
 .search-container button {
@@ -62,41 +116,37 @@ header {
     cursor: pointer;
     border-radius: 20px;
     margin-left: -40px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--card-shadow);
 }
 
 .search-container button i {
-    color: #2874f0;
+    color: var(--primary);
     font-size: 1rem;
 }
 
-/* Social media links styles */
+/* 📱 Social */
 .social-media a {
-    color: white;
+    color: var(--accent);
     margin: 0 10px;
     font-size: 1.2rem;
-    text-decoration: none;
 }
 
-/* Category drawer styles */
+/* 🧩 Categories */
 .category-drawer {
     background-color: #fff;
     padding: 10px 20px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--card-shadow);
 }
 
 .category-drawer ul {
     display: flex;
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
+    list-style: none;
     overflow-x: auto;
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE 10+ */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
-
 .category-drawer ul::-webkit-scrollbar {
-    display: none; /* Safari and Chrome */
+    display: none;
 }
 
 .category-drawer li {
@@ -105,50 +155,43 @@ header {
 }
 
 .category-drawer a {
-    text-decoration: none;
-    color: #333;
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
     padding: 8px;
     border-radius: 20px;
-    transition: all 0.3s ease;
-}
-
-.category-drawer a i {
-    font-size: 1rem;
-    margin-right: 5px;
+    color: var(--text);
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
 }
 
 .category-drawer a:hover {
-    background-color: #f0f0f0;
-    color: #2874f0;
+    background-color: #e0e7ff;
+    color: var(--primary);
 }
 
-/* Main content styles */
+.category-drawer a i {
+    margin-right: 5px;
+}
+
+/* 🧾 Main Content */
 main {
     padding: 20px;
     text-align: center;
 }
 
 main h2 {
-    margin-top: 0;
     font-size: 2.5rem;
-    color: #333;
 }
 
 main p {
     font-size: 1.2rem;
-    color: #666;
-    margin-bottom: 20px;
+    color: var(--light-text);
 }
 
-/* Card container and moving card styles */
+/* 🎴 Moving Cards */
 .card-container {
-    width: 100%;
+    margin-top: 20px;
     overflow: hidden;
     position: relative;
-    margin-top: 20px;
 }
 
 .moving-card {
@@ -164,13 +207,13 @@ main p {
     background-position: center;
     margin-left: 20px;
     border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: var(--card-shadow);
+    transition: var(--transition);
 }
 
 .card-logo:hover {
     transform: scale(1.1);
-    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
 }
 
 .card-logo.flipkart { background-image: url('https://logo.clearbit.com/flipkart.com'); }
@@ -195,8 +238,8 @@ main p {
 
 /* Footer styles */
 footer {
-    background-color: #2874f0;
-    color: white;
+    background-color: #ced8e8;
+    color: rgb(73, 53, 53);
     text-align: center;
     padding: 10px 0;
 }
@@ -441,4 +484,126 @@ td:nth-child(1) {
 /* Hide initially */
 #results, #comparisonTable {
     display: none;
+}
+
+/* ✨ Step-by-Step Section */
+.step-section {
+    background: linear-gradient(to bottom, #ffffff, #f3f4f6);
+    padding: 80px 20px;
+    text-align: center;
+}
+
+.step-section h2 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 16px;
+    color: var(--primary);
+}
+
+.step-section .subtitle {
+    font-size: 1.2rem;
+    margin-bottom: 48px;
+    color: var(--light-text);
+}
+
+.step-cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 30px;
+}
+
+.step-card {
+    background: var(--card-bg);
+    backdrop-filter: blur(12px);
+    border-radius: 20px;
+    padding: 40px 30px;
+    box-shadow: var(--card-shadow);
+    max-width: 300px;
+    flex: 1 1 250px;
+    transition: var(--transition);
+}
+
+.step-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 40px rgba(79, 70, 229, 0.2);
+}
+
+.step-icon {
+    font-size: 3rem;
+    margin-bottom: 14px;
+    color: var(--secondary);
+}
+
+.step-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.step-desc {
+    font-size: 1rem;
+    color: var(--light-text);
+    line-height: 1.6;
+}
+
+/* ✨ review section */
+.review-section {
+    background: linear-gradient(to right, #e0e7ff, #f9fafb);
+    padding: 80px 20px;
+    text-align: center;
+}
+
+.review-section h2 {
+    font-size: 2.3rem;
+    font-weight: 800;
+    color: var(--primary);
+    margin-bottom: 12px;
+}
+
+.review-section .subheading {
+    font-size: 1.1rem;
+    color: var(--light-text);
+    margin-bottom: 50px;
+}
+
+.review-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+    justify-content: center;
+}
+
+.review-card {
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    box-shadow: var(--card-shadow);
+    border-radius: 20px;
+    padding: 30px 24px;
+    max-width: 320px;
+    flex: 1 1 250px;
+    transition: var(--transition);
+}
+
+.review-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+}
+
+.review-text {
+    font-size: 1rem;
+    color: var(--text);
+    margin-bottom: 18px;
+    font-style: italic;
+}
+
+.review-author {
+    font-weight: 600;
+    color: var(--primary);
+    margin-bottom: 10px;
+}
+
+.stars {
+    font-size: 1.2rem;
+    color: #fbbf24; /* star yellow */
 }
