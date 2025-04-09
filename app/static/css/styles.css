@@ -187,72 +187,113 @@ main p {
     color: var(--light-text);
 }
 
+
+/* 🌈 Gradient Background */
+\* Gradient background for the main content area */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #4f46e5, #a855f7, #ff5722, #ff9800, #ffc107, #ffeb3b, #cddc39, #8bc34a, #4caf50, #009688, #00bcd4, #2196f3, #3f51b5, #673ab7, #9c27b0, #e91e63);
+    z-index: -1;
+    opacity: 0.1; /* Adjust for visibility */
+}
+body::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, #ff5722, #ff9800, #ffc107, #ffeb3b, #cddc39, #8bc34a, #4caf50, #009688, #00bcd4, #2196f3, #3f51b5, #673ab7, #9c27b0, #e91e63); /* Gradient border */
+    z-index: -1;
+    opacity: 0.1; /* Adjust for visibility */
+}
+
 /* 🎴 Moving Cards */
 .card-container {
     margin-top: 20px;
-    overflow: hidden;
     position: relative;
+    width: 100%; /* make full width */
+    max-width: 100vw; /* span entire viewport width */
+    padding: 0 20px; /* optional inner padding */
+    overflow-x: hidden; /* allow horizontal scroll if needed */
+    scrollbar-width: none; /* hide scrollbar for Firefox */
+    box-sizing: border-box;
+}
+
+.card-container::-webkit-scrollbar {
+    display: none; /* hide scrollbar for Chrome/Safari */
 }
 
 .moving-card {
     display: flex;
+    gap: 4px;
     animation: moveLeft 30s linear infinite;
+    width: max-content; /* prevents wrapping and allows horizontal scrolling */
 }
 
 .card-logo {
-    width: 100px;
+    width: 120px; /* Slightly larger for a modern look */
     height: 100px;
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
     margin-left: 20px;
-    border-radius: 10px;
-    box-shadow: var(--card-shadow);
-    transition: var(--transition);
+    border-radius: 1px; /* More rounded corners */
+    backdrop-filter: blur(1px); /* Glassmorphism effect */
+    background-color: rgba(255, 255, 255, 0.2); /* Semi-transparent background */
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1); /* Softer shadow */
+    border: 1px solid transparent; /* Transparent border for gradient effect */
+    background-clip: padding-box;
+    position: relative;
+    transition: transform 0.4s ease, box-shadow 0.4s ease, border 0.4s ease;
+}
+
+.card-logo::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 1px; /* Match the card's border radius */
+    transition: opacity 0.4s ease;
+    opacity: 0; /* Hidden by default */
+}
+
+.card-logo:hover::before {
+    opacity: 1; /* Show gradient border on hover */
 }
 
 .card-logo:hover {
-    transform: scale(1.1);
-    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+    transform: scale(1.1); /* Slightly larger hover effect */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); /* Stronger shadow on hover */
+    background-color: rgba(255, 255, 255, 0.3); /* Slightly brighter on hover */
 }
 
-.card-logo.flipkart { background-image: url('https://logo.clearbit.com/flipkart.com'); }
-.card-logo.amazon { background-image: url('https://logo.clearbit.com/amazon.com'); }
-.card-logo.myntra { background-image: url('https://logo.clearbit.com/myntra.com'); }
-.card-logo.lg { background-image: url('https://logo.clearbit.com/lg.com'); }
-.card-logo.apple { background-image: url('https://logo.clearbit.com/apple.com'); }
-.card-logo.xiaomi { background-image: url('https://logo.clearbit.com/mi.com'); }
-.card-logo.dell { background-image: url('https://logo.clearbit.com/dell.com'); }
-.card-logo.pg { background-image: url('https://logo.clearbit.com/us.pg.com'); }
-.card-logo.unilever { background-image: url('https://logo.clearbit.com/unilever.com'); }
-.card-logo.nestle { background-image: url('https://logo.clearbit.com/nestle.com'); }
-.card-logo.pepsico { background-image: url('https://logo.clearbit.com/pepsico.com'); }
-.card-logo.casio { background-image: url('https://logo.clearbit.com/casio.com'); }
-.card-logo.rayban { background-image: url('https://logo.clearbit.com/ray-ban.com'); }
-.card-logo.gucci { background-image: url('https://logo.clearbit.com/gucci.com'); }
-.card-logo.nike { background-image: url('https://logo.clearbit.com/nike.com'); }
-.card-logo.adidas { background-image: url('https://logo.clearbit.com/adidas.com'); }
-.card-logo.calvinklein { background-image: url('https://logo.clearbit.com/calvinklein.com'); }
-.card-logo.tommyhilfiger { background-image: url('https://logo.clearbit.com/tommy.com'); }
-.card-logo.zara { background-image: url('https://logo.clearbit.com/zara.com'); }
-
-/* Footer styles */
-footer {
-    background-color: #ced8e8;
-    color: rgb(73, 53, 53);
-    text-align: center;
-    padding: 10px 0;
-}
 
 /* Keyframes for moving card animation */
 @keyframes moveLeft {
     0% {
-        transform: translateX(100%);
+        transform: translateX(10%);
     }
     100% {
-        transform: translateX(-100%);
+        transform: translateX(-70%);
     }
 }
+
+/* Footer styles */
+footer {
+    background-color: #eff1f5;
+    color: rgb(73, 53, 53);
+    text-align: center;
+    padding: 1px 0;
+}
+
 
 /* Product URL input and button styles */
 .productURL {
@@ -549,7 +590,7 @@ td:nth-child(1) {
 
 /* ✨ review section */
 .review-section {
-    background: linear-gradient(to right, #e0e7ff, #f9fafb);
+    background: linear-gradient(45deg, #ff5722, #ff9800, #ffc107, #ffeb3b, #cddc39, #8bc34a, #4caf50, #009688, #00bcd4, #2196f3, #3f51b5, #673ab7, #9c27b0, #e91e63); /* Gradient border */
     padding: 80px 20px;
     text-align: center;
 }
