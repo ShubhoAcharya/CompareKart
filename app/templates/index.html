@@ -43,9 +43,15 @@
         <h2>Welcome to Comparekart</h2>
         <p>Your one-stop destination for comparing the best products.</p>
         <div class="productURL">
-            <div class="url-input-container">
-                <input type="text" id="productURL" placeholder="Enter the product URL">
-                <button id="urlButton"><i class="fas fa-arrow-right"></i></button>
+            <div class="w-full rounded-[32px] bg-primary bg-opacity-5">
+                <label for="product-search-bar" class="flex py-2 pl-4 pr-4 h-[58px] text-base md:text-[21.23px] text-gray-900 rounded-full border-2 focus:outline-none focus:bg-gray-50 border-primary outline-primary bg-white">
+                    <img src="data:image/svg+xml,%3csvg%20xmlns='http://www.w3.org/2000/svg'%20fill='none'%20viewBox='0%200%2033%2033'%3e%3cpath%20fill='%23000'%20d='M13.8262%204.20752c-5.29655%200-9.61868%204.32213-9.61868%209.61868%200%205.2965%204.32213%209.6186%209.61868%209.6186%202.1712%200%204.1718-.7343%205.7849-1.9564l6.2125%206.2112c.1222.1274.2687.229.4307.299.162.0701.3364.1071.5129.1089.1765.0018.3516-.0317.515-.0984.1634-.0667.3119-.1654.4367-.2902.1248-.1248.2235-.2733.2902-.4367.0667-.1634.1002-.3385.0984-.515-.0018-.1765-.0388-.3509-.1089-.5129-.07-.162-.1716-.3085-.299-.4307l-6.2112-6.2125c1.2221-1.6131%201.9564-3.6137%201.9564-5.7849%200-5.29655-4.3221-9.61868-9.6186-9.61868Zm0%202.65342c3.8625%200%206.9652%203.10273%206.9652%206.96526%200%201.8545-.7204%203.5294-1.8916%204.7743-.114.0826-.2142.1827-.2967.2967-1.2452%201.1727-2.9211%201.8942-4.7769%201.8942-3.86254%200-6.96526-3.1027-6.96526-6.9652%200-3.86253%203.10272-6.96526%206.96526-6.96526Z'%20opacity='0.43'/%3e%3c/svg%3e" alt="searchIcon" height="31.84" width="31.84" class="my-auto flex-shrink-0 max-w-[24px] md:max-w-full" loading="lazy">
+                    <input type="text" id="product-search-bar" class="flex-1 hover:outline-none focus:outline-none pl-1 disabled:bg-gray-200 bg-inherit" autocomplete="off" placeholder="Paste product link" required="">
+                </label>
+                <div class="pb-3 pt-1 md:py-3 px-4 mb-8 rounded-b-full flex gap-2 md:gap-3 md:justify-center items-end font-medium">
+                    <img src="data:image/svg+xml,%3csvg%20xmlns='http://www.w3.org/2000/svg'%20width='20'%20height='21'%20fill='none'%20viewBox='0%200%2020%2021'%3e%3cpath%20stroke='%23000'%20stroke-linecap='round'%20stroke-linejoin='round'%20stroke-width='1.5'%20d='M17.5%2017.17h-1.73c-1.67%200-2.5%200-3.2-.12-3.84-.67-6.85-3.97-7.46-8.18C5%208.1%205%206.49%205%204.67'/%3e%3cpath%20stroke='%23000'%20stroke-linecap='round'%20stroke-linejoin='round'%20stroke-width='1.5'%20d='M2.5%206.33c.5-.5%201.8-2.5%202.5-2.5s2%202%202.5%202.5'/%3e%3c/svg%3e" alt="navigateArrow" height="24" width="24" class="md:mb-2" loading="lazy">
+                    <p class="text-xs md:text-xl animate-shake">Try pasting a product link from Flipkart/Amazon</p>
+                </div>
             </div>
             <button id="product">Compare</button>
         </div>
