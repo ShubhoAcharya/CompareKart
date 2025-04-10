@@ -5,6 +5,8 @@
     --accent: #a855f7;        /* Purple-500 */
     --bg: #f9fafb;            /* Light Gray */
     --text: #1f2937;          /* Gray-800 */
+    --footer-bg: #1f2937;     /* Footer Background */
+    --footer-text: #ffffff;   /* Footer Text Color */
     --light-text: #6b7280;    /* Gray-500 */
     --card-bg: #ffffff;
     --card-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
@@ -125,10 +127,21 @@ header {
 }
 
 /* 📱 Social */
+/* Social Media Icons */
+.social-media {
+    display: flex;
+    gap: 1rem;
+}
+
 .social-media a {
-    color: var(--accent);
-    margin: 0 10px;
+    color: var(--light-text);
     font-size: 1.2rem;
+    transition: var(--transition);
+}
+
+.social-media a:hover {
+    color: var(--primary);
+    transform: translateY(-2px);
 }
 
 /* 🧩 Categories */
@@ -286,14 +299,6 @@ body::after {
     }
 }
 
-/* Footer styles */
-footer {
-    background-color: #eff1f5;
-    color: rgb(73, 53, 53);
-    text-align: center;
-    padding: 1px 0;
-}
-
 
 /* Product URL input and button styles */
 .productURL {
@@ -378,7 +383,7 @@ footer {
     padding: 10px 20px;
     font-size: 1rem;
     font-weight: bold;
-    color: white;
+    color: var(--footer-text, white); /* Use a variable with a fallback */
     background-color: #4f46e5; /* Indigo */
     border: none;
     border-radius: 30px;
@@ -752,3 +757,72 @@ td:nth-child(1) {
     font-size: 1.2rem;
     color: #fbbf24; /* star yellow */
 }
+
+/* Footer Styles */
+footer {
+    background-color: var(--footer-bg);
+    color: white;
+    padding: 2rem;
+    margin-top: 2rem;
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.footer-links {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.footer-links a {
+    color: white;
+    text-decoration: none;
+    transition: var(--transition);
+}
+.footer-links a:hover {
+    color: #ffffff; /* Brighter white for better visibility */
+    font-weight: bold; /* Bold text for emphasis */
+    background-color: rgba(255, 255, 255, 0.2); /* Subtle background highlight */
+    padding: 0.2rem 0.5rem; /* Add padding for the highlight effect */
+    border-radius: 5px; /* Rounded corners for the background */
+    text-decoration: underline;
+}
+
+/* Scroll to Top Button */
+#scrollToTop {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #4f46e5; /* Indigo */
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5rem;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+#scrollToTop:hover {
+    background-color: #4338ca; /* Darker Indigo */
+    transform: scale(1.1); /* Slightly enlarge on hover */
+}
+
+#scrollToTop.show {
+    opacity: 1;
+    visibility: visible;
+}
+

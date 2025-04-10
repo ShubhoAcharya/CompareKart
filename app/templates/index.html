@@ -19,10 +19,21 @@
             <button id="searchButton"><i class="fas fa-search"></i></button>
         </div>
         <div class="social-media">
-            <a href="#"><i class="fab fa-facebook-f"></i></a>
-            <a href="#"><i class="fa-brands fa-x-twitter"></i></a>
-            <a href="#"><i class="fab fa-linkedin-in"></i></a>
-            <a href="#"><i class="fab fa-github"></i></a>
+            <a href="https://www.facebook.com/profile.php?id=100071524550883" target="_blank" title="Facebook">
+                <i class="fab fa-facebook-f"></i>
+            </a>
+            <a href="https://twitter.com/ShubhojitB_arya" target="_blank" title="Twitter">
+                <i class="fa-brands fa-x-twitter"></i>
+            </a>
+            <a href="https://www.linkedin.com/in/shubhojit-bhattacharya-%F0%9F%87%AE%F0%9F%87%B3-960979219/" target="_blank" title="LinkedIn">
+                <i class="fab fa-linkedin-in"></i>
+            </a>
+            <a href="https://github.com/ShubhoAcharya/CompareKart" target="_blank" title="GitHub">
+                <i class="fab fa-github"></i>
+            </a>
+            <a href="https://www.instagram.com/shubhojit__bhattacharya/?hl=en" target="_blank" title="Instagram">
+                <i class="fab fa-instagram"></i>
+            </a>
         </div>
     </header>
     <nav class="category-drawer">
@@ -151,9 +162,24 @@
 
 
     <footer>
-        <p>&copy; 2024 Comparekart. All rights reserved.</p>
+      <div class="footer-content">
+        <p>&copy; <span id="currentYear"></span> Comparekart. All rights reserved.</p>
+          <div class="footer-links">
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Service</a>
+            <a href="#">Contact Us</a>
+            <a href="#">About Us</a>
+          </div>
+      </div>
     </footer>
 
+    <button id="scrollToTop" title="Go to top">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script>
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+    </script>
 </body>
 </html>

@@ -92,6 +92,25 @@ document.addEventListener("DOMContentLoaded", function() {
             });
         }, 1500);
     });
+
+    const scrollToTopButton = document.getElementById("scrollToTop");
+
+    // Show or hide the button based on scroll position
+    window.addEventListener("scroll", function () {
+        if (window.scrollY > 300) {
+            scrollToTopButton.classList.add("show");
+        } else {
+            scrollToTopButton.classList.remove("show");
+        }
+    });
+
+    // Scroll to the top when the button is clicked
+    scrollToTopButton.addEventListener("click", function () {
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth",
+        });
+    });
 });
 
 function generateTable(data) {
