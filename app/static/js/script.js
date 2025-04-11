@@ -111,6 +111,25 @@ document.addEventListener("DOMContentLoaded", function() {
             behavior: "smooth",
         });
     });
+
+    const accordions = document.querySelectorAll(".accordion");
+
+    accordions.forEach((accordion) => {
+        const button = accordion.querySelector("button");
+        const detailsWrapper = accordion.querySelector(".accordion_details_wrapper");
+
+        button.addEventListener("click", function () {
+            // Toggle the "open" class on the accordion
+            accordion.classList.toggle("open");
+
+            // Adjust the height of the details wrapper
+            if (accordion.classList.contains("open")) {
+                detailsWrapper.style.height = detailsWrapper.scrollHeight + "px";
+            } else {
+                detailsWrapper.style.height = "0";
+            }
+        });
+    });
 });
 
 function generateTable(data) {

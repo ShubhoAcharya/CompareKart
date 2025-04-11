@@ -758,6 +758,91 @@ td:nth-child(1) {
     color: #fbbf24; /* star yellow */
 }
 
+/* FAQ Section Styles */
+.faq-section {
+    background-color: #f9fafb; /* Light gray background */
+    padding: 40px 20px;
+    border-top: 1px solid #e5e7eb; /* Subtle border at the top */
+}
+
+.faq-section h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary);
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.faq-section p {
+    font-size: 1rem;
+    color: var(--light-text);
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+/* Accordion Styles */
+.accordion {
+    background-color: #ffffff; /* White background */
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.accordion:hover {
+    transform: translateY(-5px); /* Slight lift on hover */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Stronger shadow on hover */
+}
+
+.accordion button {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 20px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.accordion button:hover {
+    color: var(--primary-dark); /* Darker color on hover */
+}
+
+.accordion button img {
+    width: 24px;
+    height: 24px;
+    transition: transform 0.3s ease;
+}
+
+.accordion button:hover img {
+    transform: rotate(90deg); /* Rotate icon on hover */
+}
+
+.accordion_details_wrapper {
+    padding: 20px;
+    font-size: 0.9rem;
+    color: var(--light-text);
+    line-height: 1.6;
+    display: none; /* Initially hidden */
+}
+
+.accordion.open .accordion_details_wrapper {
+    display: block; /* Show details when open */
+}
+
+/* FAQ Section Footer Text */
+.faq-section p.text-xs {
+    font-size: 0.875rem;
+    color: var(--light-text);
+    text-align: center;
+    margin-top: 20px;
+}
+
 /* Footer Styles */
 footer {
     background-color: var(--footer-bg);
