@@ -138,14 +138,41 @@ document.addEventListener("DOMContentLoaded", function() {
         setTimeout(() => {
             const productUrl = productUrlInput.value.trim();
             if (productUrl) {
-                saveUrl(productUrl);
+                checkOrSaveUrl(productUrl);
             }
         }, 100); // Delay to ensure the pasted value is available
     });
 
-    // Function to send the URL to the backend
-    function saveUrl(productUrl) {
-        fetch('/save_url', {
+    // Function to check or save the URL
+    function checkOrSaveUrl(productUrl) {
+        fetch('/save_or_check_url', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ url: productUrl }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'exists') {
+                console.log("URL exists in the database:", data.data);
+            } else if (data.status === 'saved') {
+                console.log("URL saved to temp.txt");
+            } else if (data.status === 'not_found') {
+                console.log("URL not found in the database. Saving to temp.txt...");
+                saveToTempFile(productUrl);
+            } else {
+                console.error("Error:", data.message);
+            }
+        })
+        .catch((error) => {
+            console.error("Error:", error);
+        });
+    }
+
+    // Function to save the URL to temp.txt
+    function saveToTempFile(productUrl) {
+        fetch('/save_temp', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -154,9 +181,9 @@ document.addEventListener("DOMContentLoaded", function() {
         })
         .then(response => {
             if (response.ok) {
-                console.log("URL saved successfully to temp.txt");
+                console.log("URL saved to temp.txt successfully.");
             } else {
-                console.error("Error saving URL");
+                console.error("Failed to save URL to temp.txt.");
             }
         })
         .catch((error) => {

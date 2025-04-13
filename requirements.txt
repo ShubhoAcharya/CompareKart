@@ -9,3 +9,6 @@ scrapy==2.11.0
 webdriver-manager==4.0.2  # Added for managing browser drivers
 pyperclip==1.9.0          # Added for clipboard operations
 pyautogui==0.9.54         # Added for GUI automation
+greenlet==3.1.1           # Added for SQLAlchemy support
+sqlalchemy==2.0.40        # Added for database ORM
+psycopg2-binary==2.9.8    # Added for PostgreSQL database connection

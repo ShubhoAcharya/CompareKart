@@ -1,28 +1,59 @@
 from flask import Flask, Blueprint, render_template, request, jsonify
 import pandas as pd
+from sqlalchemy import create_engine, text
+import json
+import os
 
 from app.url_checker import check_and_update_url
 from .Amazon_search_product import search_amazon
 from .Flipkart_search_product import search_flipkart_product
-import json
-import os
 
 main = Blueprint('main', __name__)
+
+# PostgreSQL connection string
+DATABASE_URL = "postgresql://postgres:root@localhost:5432/CompareKart"  # Corrected username and password
+engine = create_engine(DATABASE_URL)
 
 @main.route('/')
 def index():
     return render_template('index.html')
 
-@main.route('/save_url', methods=['POST'])
-def save_url():
+@main.route('/save_or_check_url', methods=['POST'])
+def save_or_check_url():
     data = request.json
     product_url = data.get('url')
-    if product_url:
-        # Save the URL to temp.txt
+
+    if not product_url:
+        return jsonify({'status': 'error', 'message': 'No URL provided'}), 400
+
+    # Check if the URL exists in the database
+    with engine.connect() as connection:
+        result = connection.execute(text("SELECT * FROM products WHERE original_url = :url"), {"url": product_url}).fetchone()
+
+        if result:
+            return jsonify({'status': 'exists', 'message': 'URL already exists in the database', 'data': dict(result)}), 200
+
+        # Save the URL to temp.txt if not found
+        with open('temp.txt', 'w') as f:
+            f.write(product_url)
+
+        return jsonify({'status': 'not_found', 'message': 'URL not found in the database. Saved to temp.txt'}), 200
+
+@main.route('/save_temp', methods=['POST'])
+def save_temp():
+    data = request.json
+    product_url = data.get('url')
+
+    if not product_url:
+        return jsonify({'status': 'error', 'message': 'No URL provided'}), 400
+
+    # Save the URL to temp.txt
+    try:
         with open('temp.txt', 'w') as f:
             f.write(product_url)
         return jsonify({'status': 'success', 'message': 'URL saved to temp.txt'}), 200
-    return jsonify({'status': 'error', 'message': 'No URL provided'}), 400
+    except IOError as e:
+        return jsonify({'status': 'error', 'message': f'Failed to save URL: {e}'}), 500
 
 @main.route('/check_url', methods=['POST'])
 def check_url():
