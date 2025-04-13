@@ -13,7 +13,7 @@ options.add_argument('--headless')
 options.add_argument('--disable-gpu')
 
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
-driver.get("https://buyhatke.com/flipkart-noise-icon-4-with-stunning-1-96-amoled-display-metallic-finish-bt-calling-smartwatch-price-in-india-2-142848250")
+driver.get("https://buyhatke.com/amazon-lenovo-smartchoice-tab-m11-wi-fi-4-gb-ram-64-gb-rom-11-inch-screen-90-hz-72-ntsc-fhd-display-quad-speakers-with-dolby-atmos-octa-core-proce-price-in-india-63-77468581")
 
 # Wait a bit if needed (you can use WebDriverWait if more stability is needed)
 driver.implicitly_wait(5)
