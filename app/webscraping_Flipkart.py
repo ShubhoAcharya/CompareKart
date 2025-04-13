@@ -61,27 +61,13 @@ def scrape_flipkart_product(url):
         else:
             delivery_time = "No delivery time found"
         
-        # Extract specifications
-        specifications = {}
-        spec_sections = soup.find_all('div', class_='GNDEQ-')
-        for section in spec_sections:
-            section_title = section.find('div', class_='_4BJ2V+').get_text(strip=True)
-            spec_rows = section.find_all('tr', class_='WJdYP6 row')
-            for row in spec_rows:
-                cols = row.find_all('td')
-                if len(cols) == 2:
-                    key = cols[0].get_text(strip=True)
-                    value = cols[1].get_text(strip=True)
-                    specifications[key] = value
-
         # Returning the extracted data as a dictionary
         return {
             'Product Name': product_name,
             'Price': product_price,
             'Description': product_description,
             'Rating': product_rating,
-            'Delivery Time': delivery_time,
-            'Specifications': specifications
+            'Delivery Time': delivery_time
         }
 
     except requests.exceptions.RequestException as e:
@@ -99,12 +85,6 @@ def save_to_file(data, filename='flipkart_product.txt'):
             file.write(f"Description: {data['Description']}\n")
             file.write(f"Rating: {data['Rating']}\n")
             file.write(f"Delivery Time: {data['Delivery Time']}\n")
-            file.write("Specifications:\n")
-            file.write(f"  - Whats in the box: {data['Specifications'].get('In The Box', 'N/A')}\n")
-            file.write(f"  - Colour: {data['Specifications'].get('Color', 'N/A')}\n")
-            file.write(f"  - OS: {data['Specifications'].get('Operating System', 'N/A')}\n")
-            file.write(f"  - RAM: {data['Specifications'].get('RAM', 'N/A')}\n")
-            file.write(f"  - Battery Power Rating: {data['Specifications'].get('Battery Capacity', 'N/A')}\n")
         print(f"Data saved to {filename}")
     except IOError as e:
         print(f"Failed to write to file: {e}")

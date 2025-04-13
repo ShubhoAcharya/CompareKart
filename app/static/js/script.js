@@ -130,6 +130,39 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
     });
+
+    const productUrlInput = document.getElementById("product-search-bar");
+
+    // Handle paste event
+    productUrlInput.addEventListener("paste", function () {
+        setTimeout(() => {
+            const productUrl = productUrlInput.value.trim();
+            if (productUrl) {
+                saveUrl(productUrl);
+            }
+        }, 100); // Delay to ensure the pasted value is available
+    });
+
+    // Function to send the URL to the backend
+    function saveUrl(productUrl) {
+        fetch('/save_url', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ url: productUrl }),
+        })
+        .then(response => {
+            if (response.ok) {
+                console.log("URL saved successfully to temp.txt");
+            } else {
+                console.error("Error saving URL");
+            }
+        })
+        .catch((error) => {
+            console.error("Error:", error);
+        });
+    }
 });
 
 function generateTable(data) {

@@ -16,10 +16,13 @@ def index():
 @main.route('/save_url', methods=['POST'])
 def save_url():
     data = request.json
-    product_url = data['url']
-    with open('product_URL_check.txt', 'w') as f:
-        f.write(product_url)
-    return '', 204
+    product_url = data.get('url')
+    if product_url:
+        # Save the URL to temp.txt
+        with open('temp.txt', 'w') as f:
+            f.write(product_url)
+        return jsonify({'status': 'success', 'message': 'URL saved to temp.txt'}), 200
+    return jsonify({'status': 'error', 'message': 'No URL provided'}), 400
 
 @main.route('/check_url', methods=['POST'])
 def check_url():
