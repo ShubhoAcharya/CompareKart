@@ -39,21 +39,6 @@ def save_or_check_url():
 
         return jsonify({'status': 'not_found', 'message': 'URL not found in the database. Saved to temp.txt'}), 200
 
-@main.route('/save_temp', methods=['POST'])
-def save_temp():
-    data = request.json
-    product_url = data.get('url')
-
-    if not product_url:
-        return jsonify({'status': 'error', 'message': 'No URL provided'}), 400
-
-    # Save the URL to temp.txt
-    try:
-        with open('temp.txt', 'w') as f:
-            f.write(product_url)
-        return jsonify({'status': 'success', 'message': 'URL saved to temp.txt'}), 200
-    except IOError as e:
-        return jsonify({'status': 'error', 'message': f'Failed to save URL: {e}'}), 500
 
 @main.route('/check_url', methods=['POST'])
 def check_url():

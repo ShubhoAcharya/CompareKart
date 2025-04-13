@@ -169,27 +169,6 @@ document.addEventListener("DOMContentLoaded", function() {
             console.error("Error:", error);
         });
     }
-
-    // Function to save the URL to temp.txt
-    function saveToTempFile(productUrl) {
-        fetch('/save_temp', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ url: productUrl }),
-        })
-        .then(response => {
-            if (response.ok) {
-                console.log("URL saved to temp.txt successfully.");
-            } else {
-                console.error("Failed to save URL to temp.txt.");
-            }
-        })
-        .catch((error) => {
-            console.error("Error:", error);
-        });
-    }
 });
 
 function generateTable(data) {
