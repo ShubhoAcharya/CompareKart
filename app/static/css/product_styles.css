@@ -67,61 +67,76 @@ a:hover {
 /* 🧭 Header */
 header {
     background-color: #fff;
-    color: var(--text);
-    padding: 1.2rem 2rem;
+    padding: 1rem 2rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
     box-shadow: var(--card-shadow);
-    position: sticky;
-    top: 0;
-    z-index: 10;
 }
 
 .logo-container img {
     height: 50px;
 }
 
+/* 🔍 Search */
 .search-container {
+    width: 50%;
     display: flex;
     align-items: center;
-    gap: 10px;
 }
 
 .search-container input {
+    width: calc(100% - 40px);
     padding: 10px;
-    border: 1px solid #ddd;
+    border: none;
     border-radius: 20px;
+    font-size: 1rem;
     outline: none;
-    width: 300px;
+    background: #fff;
+    box-shadow: var(--card-shadow);
 }
 
 .search-container button {
-    padding: 10px 15px;
-    background-color: var(--primary);
-    color: white;
+    padding: 10px 20px;
+    background-color: #fff;
     border: none;
-    border-radius: 20px;
     cursor: pointer;
+    border-radius: 20px;
+    margin-left: -40px;
+    box-shadow: var(--card-shadow);
 }
 
-.search-container button:hover {
-    background-color: var(--primary-dark);
+.search-container button i {
+    color: var(--primary);
+    font-size: 1rem;
+}
+
+/* 📱 Social */
+/* Social Media Icons */
+.social-media {
+    display: flex;
+    gap: 1rem;
 }
 
 .social-media a {
     color: var(--light-text);
     font-size: 1.2rem;
-    margin-left: 10px;
     transition: var(--transition);
 }
 
 .social-media a:hover {
     color: var(--primary);
+    transform: translateY(-2px);
 }
 
 /* 🧾 Main Content */
 main {
+    padding: 2rem;
+    text-align: center;
+}
+
+/* Product Display */
+.product-display {
     padding: 2rem;
     text-align: center;
 }
@@ -136,7 +151,7 @@ main {
     text-align: center;
 }
 
-.product-image {
+.product-card img {
     width: 100%;
     max-width: 300px;
     height: auto;
@@ -144,33 +159,83 @@ main {
     margin-bottom: 1rem;
 }
 
-.product-name {
+.product-card h3 {
     font-size: 1.5rem;
     font-weight: bold;
     margin-bottom: 1rem;
 }
 
-.product-price,
-.product-rating {
+.product-card p {
     font-size: 1.2rem;
     margin-bottom: 0.5rem;
 }
 
-/* Footer */
+/* Compare Button Styles */
+#compareButton {
+    padding: 15px 30px;
+    font-size: 1.2rem;
+    font-family: 'Open Sans', sans-serif;
+    font-weight: bold; /* Makes text thicker */
+    line-height: 1.6; /* Improves readability */
+    color: white;
+    background: linear-gradient(135deg, #14b8a6, #2dd4bf); /* Teal gradient background */
+    border: none;
+    border-radius: 50px; /* Pill-shaped button */
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    margin-top: 20px;
+}
+
+#compareButton:hover {
+    background: linear-gradient(135deg, #0d9488, #14b8a6); /* Darker teal gradient on hover */
+    transform: translateY(-3px); /* Lift effect */
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2); /* Stronger shadow on hover */
+}
+
+#compareButton:active {
+    transform: translateY(2px); /* Pressed effect */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Reduced shadow on click */
+}
+
+#compareButton:focus {
+    outline: 2px solid #2dd4bf; /* Teal focus outline */
+    outline-offset: 2px;
+}
+
+/* Footer Styles */
 footer {
     background-color: var(--footer-bg);
-    color: var(--footer-text);
-    text-align: center;
-    padding: 1rem;
+    color: white;
+    padding: 2rem;
+    margin-top: 2rem;
 }
 
-footer a {
-    color: var(--footer-text);
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.footer-links {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.footer-links a {
+    color: white;
     text-decoration: none;
-    margin: 0 10px;
+    transition: var(--transition);
 }
-
-footer a:hover {
+.footer-links a:hover {
+    color: #ffffff; /* Brighter white for better visibility */
+    font-weight: bold; /* Bold text for emphasis */
+    background-color: rgba(255, 255, 255, 0.2); /* Subtle background highlight */
+    padding: 0.2rem 0.5rem; /* Add padding for the highlight effect */
+    border-radius: 5px; /* Rounded corners for the background */
     text-decoration: underline;
 }
 
@@ -179,7 +244,7 @@ footer a:hover {
     position: fixed;
     bottom: 20px;
     right: 20px;
-    background-color: var(--primary);
+    background-color: #4f46e5; /* Indigo */
     color: white;
     border: none;
     border-radius: 50%;
@@ -190,10 +255,15 @@ footer a:hover {
     align-items: center;
     font-size: 1.5rem;
     cursor: pointer;
-    box-shadow: var(--card-shadow);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+#scrollToTop:hover {
+    background-color: #4338ca; /* Darker Indigo */
+    transform: scale(1.1); /* Slightly enlarge on hover */
 }
 
 #scrollToTop.show {
@@ -201,6 +271,4 @@ footer a:hover {
     visibility: visible;
 }
 
-#scrollToTop:hover {
-    background-color: var(--primary-dark);
-}
+/* Responsive Styles */
