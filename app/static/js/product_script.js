@@ -10,11 +10,10 @@ document.addEventListener("DOMContentLoaded", function () {
         return new Promise((resolve) => {
             setTimeout(() => {
                 resolve({
-                    name: "Sample Product",
-                    price: "₹999",
-                    description: "This is a sample product description.",
-                    rating: "4.5/5",
-                    availability: "In Stock",
+                    name: "Noise Icon 4 With Stunning 1.96'' AMOLED Display, Metallic Finish, BT Calling Smartwatch",
+                    price: "₹1,699",
+                    rating: "4.1",
+                    imageUrl: "https://rukminim2.flixcart.com/image/612/612/xif0q/smartwatch/n/v/1/-original-imah6s6pq7wxa4u6.jpeg?q=70",
                 });
             }, 1000);
         });
@@ -25,11 +24,10 @@ document.addEventListener("DOMContentLoaded", function () {
         .then((product) => {
             productDetailsDiv.innerHTML = `
                 <div class="product-card">
-                    <h3>${product.name}</h3>
-                    <p><strong>Price:</strong> ${product.price}</p>
-                    <p><strong>Description:</strong> ${product.description}</p>
-                    <p><strong>Rating:</strong> ${product.rating}</p>
-                    <p><strong>Availability:</strong> ${product.availability}</p>
+                    <img src="${product.imageUrl}" alt="${product.name}" class="product-image">
+                    <h3 class="product-name">${product.name}</h3>
+                    <p class="product-price"><strong>Price:</strong> ${product.price}</p>
+                    <p class="product-rating"><strong>Rating:</strong> ${product.rating}</p>
                 </div>
             `;
         })
