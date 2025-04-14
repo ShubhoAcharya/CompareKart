@@ -18,6 +18,10 @@ engine = create_engine(DATABASE_URL)
 def index():
     return render_template('index.html')
 
+@main.route('/product_display')
+def product_display():
+    return render_template('product_display.html')
+
 @main.route('/save_or_check_url', methods=['POST'])
 def save_or_check_url():
     data = request.json
@@ -42,10 +46,13 @@ def save_or_check_url():
 
 @main.route('/check_url', methods=['POST'])
 def check_url():
-    with open('product_URL_check.txt', 'r') as f:
-        product_url = f.read()
-    check_and_update_url(product_url)
-    return '', 204
+    try:
+        with open('product_URL_check.txt', 'r') as f:
+            product_url = f.read()
+        check_and_update_url(product_url)
+        return '', 204
+    except FileNotFoundError:
+        return jsonify({'status': 'error', 'message': 'File not found'}), 404
 
 
 @main.route('/compare', methods=['GET'])
@@ -69,20 +76,28 @@ def compare():
     os.system('python ./app/datatabulation_pandas.py')
 
     csv_file = './product_comparison.csv'  # Update this path accordingly
-    df = pd.read_csv(csv_file)
-    headers = list(df.columns)
-    rows = df.values.tolist()
-    
+    if os.path.exists(csv_file):
+        df = pd.read_csv(csv_file)
+        headers = list(df.columns)
+        rows = df.values.tolist()
+    else:
+        headers = []
+        rows = []
+
     return jsonify({
         'headers': headers,
         'rows': rows,
         'product_urls': product_urls
     })
 
+
 @main.route('/search', methods=['POST'])
 def search():
     data = request.json
     product_name = data.get('query')
+
+    if not product_name:
+        return jsonify({'status': 'error', 'message': 'No product name provided'}), 400
 
     # Search on Amazon
     amazon_url = search_amazon(product_name)
