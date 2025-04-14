@@ -397,7 +397,7 @@ body::after {
 }
 
 /* Compare Button Styles */
-#product {
+#compareButton {
     padding: 15px 30px;
     font-size: 1.2rem;
     font-family: 'Open Sans', sans-serif;
@@ -413,18 +413,18 @@ body::after {
     margin-top: 20px;
 }
 
-#product:hover {
+#compareButton:hover {
     background: linear-gradient(135deg, #0d9488, #14b8a6); /* Darker teal gradient on hover */
     transform: translateY(-3px); /* Lift effect */
     box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2); /* Stronger shadow on hover */
 }
 
-#product:active {
+#compareButton:active {
     transform: translateY(2px); /* Pressed effect */
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Reduced shadow on click */
 }
 
-#product:focus {
+#compareButton:focus {
     outline: 2px solid #2dd4bf; /* Teal focus outline */
     outline-offset: 2px;
 }
