@@ -228,77 +228,63 @@ body::after {
 
 /* 🎴 Moving Cards */
 .card-container {
-    margin-top: 20px;
+    margin-top: 40px;
     position: relative;
-    width: 100%; /* make full width */
-    max-width: 100vw; /* span entire viewport width */
-    padding: 0 20px; /* optional inner padding */
-    overflow-x: hidden; /* allow horizontal scroll if needed */
-    scrollbar-width: none; /* hide scrollbar for Firefox */
-    box-sizing: border-box;
-}
-
-.card-container::-webkit-scrollbar {
-    display: none; /* hide scrollbar for Chrome/Safari */
+    width: 100%;
+    overflow: hidden;
+    padding: 20px 0;
+    background: linear-gradient(135deg, #f3f4f6, #ffffff); /* Subtle gradient background */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    border-radius: 10px;
 }
 
 .moving-card {
     display: flex;
-    gap: 4px;
-    animation: moveLeft 30s linear infinite;
-    width: max-content; /* prevents wrapping and allows horizontal scrolling */
+    gap: 20px;
+    animation: moveLeft 20s linear infinite; /* Smooth infinite scrolling */
+    width: max-content; /* Prevent wrapping */
+    padding: 10px 0;
 }
 
 .card-logo {
-    width: 120px; /* Slightly larger for a modern look */
+    width: 120px;
     height: 100px;
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    margin-left: 20px;
-    border-radius: 1px; /* More rounded corners */
-    backdrop-filter: blur(1px); /* Glassmorphism effect */
-    background-color: rgba(255, 255, 255, 0.2); /* Semi-transparent background */
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1); /* Softer shadow */
-    border: 1px solid transparent; /* Transparent border for gradient effect */
-    background-clip: padding-box;
-    position: relative;
-    transition: transform 0.4s ease, box-shadow 0.4s ease, border 0.4s ease;
-}
-
-.card-logo::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border-radius: 1px; /* Match the card's border radius */
-    transition: opacity 0.4s ease;
-    opacity: 0; /* Hidden by default */
-}
-
-.card-logo:hover::before {
-    opacity: 1; /* Show gradient border on hover */
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent background */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .card-logo:hover {
-    transform: scale(1.1); /* Slightly larger hover effect */
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); /* Stronger shadow on hover */
-    background-color: rgba(255, 255, 255, 0.3); /* Slightly brighter on hover */
+    transform: scale(1.1); /* Slight zoom on hover */
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2); /* Stronger shadow on hover */
+    background-color: rgba(255, 255, 255, 1); /* Fully opaque on hover */
 }
-
 
 /* Keyframes for moving card animation */
 @keyframes moveLeft {
     0% {
-        transform: translateX(10%);
+        transform: translateX(0);
     }
     100% {
-        transform: translateX(-70%);
+        transform: translateX(-100%);
     }
 }
 
+/* Responsive Styles for Moving Cards */
+@media (max-width: 768px) {
+    .card-logo {
+        width: 100px;
+        height: 80px;
+    }
+
+    .moving-card {
+        gap: 10px;
+    }
+}
 
 /* Product URL input and button styles */
 .productURL {
@@ -756,6 +742,32 @@ td:nth-child(1) {
 .stars {
     font-size: 1.2rem;
     color: #fbbf24; /* star yellow */
+}
+
+/* Price History Section */
+.price-history-section {
+    text-align: center;
+    padding: 40px 20px;
+    background: linear-gradient(135deg, #ffffff, #f3f4f6); /* Subtle gradient background */
+    border-radius: 10px;
+    margin: 20px auto;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    max-width: 1200px;
+}
+
+.price-history-section h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 20px;
+}
+
+.price-history-section .description {
+    font-size: 1.1rem;
+    color: var(--light-text);
+    line-height: 1.6;
+    max-width: 800px;
+    margin: 0 auto;
 }
 
 /* FAQ Section Styles */
