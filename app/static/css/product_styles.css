@@ -203,6 +203,33 @@ main {
     outline-offset: 2px;
 }
 
+#chart-container {
+    width: 45%; /* Reduce width to 80% of the parent container */
+    height: 450px; /* Reduce height to 300px */
+    margin: 0 auto;
+}
+.price-summary {
+    text-align: center; 
+    margin: 20px 0; 
+    font-family: Arial, sans-serif;
+}
+.price-label {
+    font-size: 1.1em;
+    margin: 5px 0;
+    padding: 8px 15px;
+    border-radius: 4px;
+    display: inline-block;
+}
+.lowest-price {
+    background-color: #ffebee;
+    color: #d32f2f;
+}
+.average-price {
+    background-color: #e3f2fd;
+    color: #1976d2;
+}
+
+
 /* Footer Styles */
 footer {
     background-color: var(--footer-bg);

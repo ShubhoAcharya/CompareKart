@@ -115,3 +115,14 @@ def search():
         json.dump(product_urls, f)
 
     return jsonify(product_urls)
+
+
+@main.route('/graph_data.json', methods=['GET'])
+def serve_graph_data():
+    graph_data_file = './graph_data.json'  # Path to the JSON file
+    if os.path.exists(graph_data_file):
+        with open(graph_data_file, 'r', encoding='utf-8') as f:
+            graph_data = json.load(f)
+        return jsonify(graph_data)
+    else:
+        return jsonify({'status': 'error', 'message': 'Graph data not found'}), 404
