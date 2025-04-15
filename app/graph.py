@@ -1,4 +1,6 @@
+import os
 import json
+from urllib.parse import urlparse, unquote
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -7,7 +9,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
-def extract_graph_data_selenium(url, output_file='graph_data.json'):
+def extract_graph_data_selenium(url, output_folder='Graph_folder'):  # Updated folder name
     print("[1/6] Setting up Chrome options...")
     options = Options()
     options.add_argument("--disable-gpu")
@@ -23,6 +25,19 @@ def extract_graph_data_selenium(url, output_file='graph_data.json'):
 
         print("[4/6] Waiting for Highcharts graph to load...")
         wait = WebDriverWait(driver, 30)
+
+        # Attempt to extract product name from webpage
+        try:
+            product_name = driver.find_element(By.TAG_NAME, "h1").text.strip()
+        except Exception:
+            # If product name can't be extracted, fall back to parsing URL
+            print("⚠️ Could not extract product name from page, deriving it from URL...")
+            parsed_url = urlparse(url)
+            product_name = unquote(parsed_url.path.split('/')[-1].split('-price')[0].strip().replace(" ", "_"))
+
+        # Ensure output folder exists
+        os.makedirs(output_folder, exist_ok=True)
+        output_file = os.path.join(output_folder, f"{product_name}.json")
 
         # Extract path data
         try:
@@ -65,9 +80,8 @@ def extract_graph_data_selenium(url, output_file='graph_data.json'):
             subtitle = "Historical price trends"
             print("⚠️ Could not extract subtitle, using default.")
 
-        # Extract Lowest Price and Average Price from the HTML structure
+        # Extract Lowest Price and Average Price
         try:
-            # Corrected XPath for Lowest Price and Average Price
             lowest_price_element = driver.find_element(By.XPATH, "//div[@class='flex items-center justify-between']/following-sibling::div/p[1]")
             average_price_element = driver.find_element(By.XPATH, "//div[@class='flex items-center justify-between']/following-sibling::div/p[2]")
 
