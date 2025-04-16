@@ -54,45 +54,8 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 
-    var compareButton = document.getElementById("product");
-    compareButton.addEventListener("click", function() {
-        var loader = document.getElementById("loader");
-        var resultsDiv = document.getElementById("results");
-        var comparisonTable = document.getElementById("comparisonTable");
 
-        // Show loader and hide results and comparison table
-        loader.style.display = "block";
-        resultsDiv.style.display = "none";
-        comparisonTable.style.display = "none";
-
-        setTimeout(function() {
-            fetch('/compare')
-            .then(response => response.json())
-            .then(data => {
-                // Hide loader and show results and comparison table
-                loader.style.display = "none";
-                resultsDiv.style.display = "block";
-                comparisonTable.style.display = "block";
-
-                comparisonTable.innerHTML = generateTable(data);
-
-                resultsDiv.innerHTML = `
-                    <div class="link-container">
-                        <a href="${data.product_urls.amazon_link}" class="styled-link amazon-link" target="_blank">
-                            <i class="fas fa-shopping-cart"></i> Amazon: Go to Amazon
-                        </a>
-                        <a href="${data.product_urls.flipkart_link}" class="styled-link flipkart-link" target="_blank">
-                            <i class="fas fa-shopping-cart"></i> Flipkart: Go to Flipkart
-                        </a>
-                    </div>
-                `;
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-            });
-        }, 1500);
-    });
-
+    // Scroll to Top Button
     const scrollToTopButton = document.getElementById("scrollToTop");
 
     // Show or hide the button based on scroll position
@@ -132,20 +95,46 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     const productUrlInput = document.getElementById("product-search-bar");
+    if (!productUrlInput) {
+        console.error("Element with ID 'product-search-bar' not found.");
+    }
 
     // Handle paste event
     productUrlInput.addEventListener("paste", function () {
+        console.log("Paste event triggered"); // Debug log
         setTimeout(() => {
             const productUrl = productUrlInput.value.trim();
+            console.log("Pasted URL:", productUrl); // Debug log
             if (productUrl) {
-                checkOrSaveUrl(productUrl);
+                // Send the URL to the backend to process it
+                fetch('/process_url', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ url: productUrl }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        console.log(`URL processed successfully. Row ID: ${data.id}`);
+                    } else if (data.status === 'exists') {
+                        console.log(`URL already exists in the database. Row ID: ${data.id}`);
+                    } else {
+                        console.error("Error:", data.message);
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error:", error);
+                });
             }
         }, 100); // Delay to ensure the pasted value is available
     });
 
-    // Function to check or save the URL
-    function checkOrSaveUrl(productUrl) {
-        fetch('/save_or_check_url', {
+    // Function to process the URL
+    function processUrl(productUrl) {
+        console.log("Processing URL:", productUrl); // Debug log
+        fetch('/process_url', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -154,13 +143,10 @@ document.addEventListener("DOMContentLoaded", function() {
         })
         .then(response => response.json())
         .then(data => {
-            if (data.status === 'exists') {
-                console.log("URL exists in the database:", data.data);
-            } else if (data.status === 'saved') {
-                console.log("URL saved to temp.txt");
-            } else if (data.status === 'not_found') {
-                console.log("URL not found in the database. Saving to temp.txt...");
-                saveToTempFile(productUrl);
+            if (data.status === 'success') {
+                console.log(`URL saved successfully. Row ID: ${data.id}`);
+            } else if (data.status === 'exists') {
+                console.log(`URL already exists in the database. Row ID: ${data.id}`);
             } else {
                 console.error("Error:", data.message);
             }
@@ -170,58 +156,3 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 });
-
-function generateTable(data) {
-    let table = '<table><thead><tr>';
-    // Create table headers
-    data.headers.forEach(header => {
-        table += `<th>${header}</th>`;
-    });
-    table += '</tr></thead><tbody>';
-    // Create table rows
-    data.rows.forEach(row => {
-        table += '<tr>';
-        row.forEach(cell => {
-            table += `<td>${cell}</td>`;
-        });
-        table += '</tr>';
-    });
-    table += '</tbody></table>';
-    return table;
-}
-
-
-var urlButton = document.getElementById("urlButton");
-    urlButton.addEventListener("click", function() {
-        var productURL = document.getElementById("productURL").value;
-        fetch('/save_url', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ url: productURL }),
-        })
-        .then(response => {
-            if (response.ok) {
-                console.log("URL saved successfully");
-                fetch('/check_url', {
-                    method: 'POST',
-                })
-                .then(response => {
-                    if (response.ok) {
-                        console.log("URL checked successfully");
-                    } else {
-                        console.error('Error checking URL');
-                    }
-                })
-                .catch((error) => {
-                    console.error('Error:', error);
-                });
-            } else {
-                console.error('Error saving URL');
-            }
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-        });
-    });

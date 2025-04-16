@@ -1,5 +1,6 @@
 import os
 import json
+import time
 from urllib.parse import urlparse, unquote
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -8,8 +9,9 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
+import sys
 
-def extract_graph_data_selenium(url, output_folder='Graph_folder'):  # Updated folder name
+def extract_graph_data_selenium(url, output_folder='Graph_folder'):
     print("[1/6] Setting up Chrome options...")
     options = Options()
     options.add_argument("--disable-gpu")
@@ -19,27 +21,30 @@ def extract_graph_data_selenium(url, output_folder='Graph_folder'):  # Updated f
     print("[2/6] Launching browser...")
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
+    output_file = None  # To track where JSON is saved
+
     try:
         print(f"[3/6] Opening URL: {url}")
         driver.get(url)
-
-        print("[4/6] Waiting for Highcharts graph to load...")
         wait = WebDriverWait(driver, 30)
 
-        # Attempt to extract product name from webpage
+        # Get product name from <h1> or fallback
         try:
             product_name = driver.find_element(By.TAG_NAME, "h1").text.strip()
         except Exception:
-            # If product name can't be extracted, fall back to parsing URL
-            print("⚠️ Could not extract product name from page, deriving it from URL...")
+            print(" Could not extract product name, deriving from URL...")
             parsed_url = urlparse(url)
             product_name = unquote(parsed_url.path.split('/')[-1].split('-price')[0].strip().replace(" ", "_"))
 
-        # Ensure output folder exists
-        os.makedirs(output_folder, exist_ok=True)
-        output_file = os.path.join(output_folder, f"{product_name}.json")
+        # Add timestamp to filename to avoid overwrite
+        timestamp = int(time.time())
+        safe_name = "".join(c if c.isalnum() or c in " _-" else "_" for c in product_name)
+        filename = f"{safe_name}_{timestamp}.json"
 
-        # Extract path data
+        os.makedirs(output_folder, exist_ok=True)
+        output_file = os.path.join(output_folder, filename)
+
+        # Extract chart data
         try:
             graph_path = wait.until(EC.presence_of_element_located((
                 By.CSS_SELECTOR,
@@ -48,51 +53,40 @@ def extract_graph_data_selenium(url, output_folder='Graph_folder'):  # Updated f
             path_data = graph_path.get_attribute("d")
         except Exception:
             path_data = ""
-            print("⚠️ Could not extract path data.")
+            print(" Could not extract path data.")
 
-        # Extract Y-axis labels
         try:
-            y_axis_labels = driver.find_elements(By.CSS_SELECTOR, "g.highcharts-axis-labels.highcharts-yaxis-labels text")
-            y_labels = [label.text for label in y_axis_labels if label.text]
-        except Exception:
+            y_labels = [label.text for label in driver.find_elements(
+                By.CSS_SELECTOR, "g.highcharts-axis-labels.highcharts-yaxis-labels text") if label.text]
+        except:
             y_labels = []
-            print("⚠️ Could not extract Y-axis labels.")
 
-        # Extract X-axis labels
         try:
-            x_axis_labels = driver.find_elements(By.CSS_SELECTOR, "g.highcharts-axis-labels.highcharts-xaxis-labels text")
-            x_labels = [label.text for label in x_axis_labels if label.text]
-        except Exception:
+            x_labels = [label.text for label in driver.find_elements(
+                By.CSS_SELECTOR, "g.highcharts-axis-labels.highcharts-xaxis-labels text") if label.text]
+        except:
             x_labels = []
-            print("⚠️ Could not extract X-axis labels.")
 
-        # Extract title
         try:
             title = driver.find_element(By.CSS_SELECTOR, "text.highcharts-title").text
-        except Exception:
+        except:
             title = "Price History"
-            print("⚠️ Could not extract title, using default.")
 
-        # Extract subtitle
         try:
             subtitle = driver.find_element(By.CSS_SELECTOR, "text.highcharts-subtitle").text
-        except Exception:
+        except:
             subtitle = "Historical price trends"
-            print("⚠️ Could not extract subtitle, using default.")
 
-        # Extract Lowest Price and Average Price
         try:
             lowest_price_element = driver.find_element(By.XPATH, "//div[@class='flex items-center justify-between']/following-sibling::div/p[1]")
             average_price_element = driver.find_element(By.XPATH, "//div[@class='flex items-center justify-between']/following-sibling::div/p[2]")
 
             lowest_price = float(lowest_price_element.text.replace("₹", "").replace(",", ""))
             average_price = float(average_price_element.text.replace("₹", "").replace(",", ""))
-        except Exception:
+        except:
             lowest_price = 0
             average_price = 0
-            print("⚠️ Could not extract Lowest Price or Average Price.")
 
-        # Prepare and save data
         graph_data = {
             "title": title,
             "subtitle": subtitle,
@@ -109,11 +103,22 @@ def extract_graph_data_selenium(url, output_folder='Graph_folder'):  # Updated f
         print(f"[6/6] Graph data saved to '{output_file}'.")
 
     except Exception as e:
-        print("❌ An error occurred:", e)
+        print(" An error occurred:", e)
+
     finally:
         driver.quit()
 
-# === Usage ===
+    return output_file
+
+
+# === CLI Usage ===
 if __name__ == "__main__":
-    user_url = input("Enter the URL of the page with the graph: ")
-    extract_graph_data_selenium(user_url)
+    if len(sys.argv) > 1:
+        user_url = sys.argv[1]
+        result_file = extract_graph_data_selenium(user_url)
+        if result_file:
+            print(result_file)  # Output path to be used by backend
+        else:
+            print(" Failed to save graph data.")
+    else:
+        print(" No URL provided.")

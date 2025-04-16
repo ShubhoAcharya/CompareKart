@@ -203,6 +203,211 @@ main {
     outline-offset: 2px;
 }
 
+/* Stylish button styles */
+.button {
+    height: 50px;
+    width: 200px;
+    position: relative;
+    background-color: transparent;
+    cursor: pointer;
+    border: 2px solid #252525;
+    overflow: hidden;
+    border-radius: 30px;
+    color: #333;
+    transition: all 0.5s ease-in-out;
+}
+
+.btn-txt {
+    z-index: 1;
+    font-weight: 800;
+    letter-spacing: 4px;
+}
+
+.type1::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    transition: all 0.5s ease-in-out;
+    background-color: #333;
+    border-radius: 30px;
+    visibility: hidden;
+    height: 10px;
+    width: 10px;
+    z-index: -1;
+}
+
+.button:hover {
+    box-shadow: 1px 1px 200px #252525;
+    color: #fff;
+    border: none;
+}
+
+.type1:hover::after {
+    visibility: visible;
+    transform: scale(100) translateX(2px);
+}
+
+/* Go to Link button styles */
+.goto-link-button {
+    padding: 15px 30px;
+    font-size: 1rem;
+    cursor: pointer;
+    background-color: #2874f0;
+    color: white;
+    border: none;
+    border-radius: 30px;
+    margin: 10px;
+    transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: inline-block;
+    text-align: center;
+    text-decoration: none;
+}
+
+.goto-link-button:hover {
+    background-color: #70e93b;
+    transform: scale(1.1);
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Table styles */
+.table-container {
+    margin: 40px auto;
+    max-width: 1200px;
+    overflow-x: auto;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    background-color: #fff;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 1rem;
+    text-align: left;
+    background-color: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+th, td {
+    padding: 20px;
+    border-bottom: 1px solid #ddd;
+    border-right: 1px solid #ddd;
+}
+
+th:last-child, td:last-child {
+    border-right: none;
+}
+
+th {
+    background-color: #2874f0;
+    color: white;
+    text-transform: uppercase;
+    font-size: 1.1rem;
+}
+
+tr:hover {
+    background-color: #f5f5f5;
+}
+
+td:nth-child(1) {
+    font-weight: 700;
+}
+
+.table-container::-webkit-scrollbar {
+    height: 12px;
+}
+
+.table-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+
+/* Links container styles */
+.link-container {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.link-container a.styled-link {
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    color: white;
+    font-weight: bold;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+}
+
+.flipkart-link {
+    background-color: #2874f0;
+}
+
+.amazon-link {
+    background-color: #ff9900;
+}
+
+.link-container a.styled-link:hover {
+    opacity: 0.8;
+    transform: scale(1.05);
+}
+
+.link-container a i {
+    margin-right: 10px;
+    font-size: 1.2rem;
+}
+
+/* Loader styles */
+#loader {
+    display: none;
+    border: 8px solid #f3f3f3; /* Light grey */
+    border-top: 8px solid #3498db; /* Blue */
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Hide initially */
+#results, #comparisonTable {
+    display: none;
+}
+#loader {
+    display: block; /* Show loader when loading */
+}
+/* Show results and comparison table when data is loaded */
+
+
+/* Chart Styles */
+#chart-container {
+    width: 80%; /* Reduce width to 80% of the parent container */
+    height: 300px; /* Reduce height to 300px */
+    margin: 0 auto;
+    background-color: #fff; /* White background for the chart container */
+    border-radius: 10px; /* Rounded corners for the chart container */
+    box-shadow: var(--card-shadow); /* Subtle shadow for depth */
+}
 #chart-container {
     width: 45%; /* Reduce width to 80% of the parent container */
     height: 450px; /* Reduce height to 300px */

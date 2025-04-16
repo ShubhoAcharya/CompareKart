@@ -6,37 +6,48 @@ from webdriver_manager.chrome import ChromeDriverManager
 import requests
 import os
 import re
+import sys
+import json
 
-# Setup headless browser
+# === Check if input URL is provided ===
+if len(sys.argv) > 1:
+    input_url = sys.argv[1]
+else:
+    print(" No URL provided. Please pass a product URL as a command-line argument.")
+    sys.exit(1)
+
+# === Setup headless browser ===
 options = Options()
 options.add_argument('--headless')
 options.add_argument('--disable-gpu')
 
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
-driver.get("https://buyhatke.com/amazon-lenovo-smartchoice-tab-m11-wi-fi-4-gb-ram-64-gb-rom-11-inch-screen-90-hz-72-ntsc-fhd-display-quad-speakers-with-dolby-atmos-octa-core-proce-price-in-india-63-77468581")
-
-# Wait a bit if needed (you can use WebDriverWait if more stability is needed)
+driver.get(input_url)
 driver.implicitly_wait(5)
 
 # === Extract Image ===
 try:
     product_img = driver.find_element(By.CSS_SELECTOR, 'img.product_image')
     product_img_url = product_img.get_attribute("src")
-    print("✅ Image URL:", product_img_url)
 except:
     product_img_url = None
-    print("⚠️ Product image not found.")
 
 # === Extract Product Name ===
-product_name = driver.find_element(By.TAG_NAME, "h1").text.strip()
+try:
+    product_name = driver.find_element(By.TAG_NAME, "h1").text.strip()
+except:
+    product_name = "Unknown Product"
 
-# Sanitize product name for file saving
+# === Sanitize product name for saving ===
 safe_product_name = re.sub(r'[\\/*?:"<>|]', "_", product_name)
 
 # === Extract Price ===
-price = driver.find_element(By.CLASS_NAME, "font-bold").text.strip()
+try:
+    price = driver.find_element(By.CLASS_NAME, "font-bold").text.strip()
+except:
+    price = "N/A"
 
-# === Extract Rating (optional) ===
+# === Extract Rating ===
 try:
     rating = driver.find_element(By.CLASS_NAME, "text-primary").text.strip()
 except:
@@ -44,25 +55,12 @@ except:
 
 driver.quit()
 
-# === Save Data ===
-os.makedirs("product_data", exist_ok=True)
+# === Output JSON for use in backend ===
+product_info = {
+    "Product Name": product_name,
+    "Price": price,
+    "Rating": rating,
+    "Image URL": product_img_url or "N/A"
+}
 
-# Save image
-if product_img_url:
-    img_data = requests.get(product_img_url).content
-    img_filename = os.path.join("product_data", f"{safe_product_name}_image.jpg")
-    with open(img_filename, "wb") as f:
-        f.write(img_data)
-    print(f"✅ Image saved to {img_filename}")
-else:
-    print("⚠️ Image not found.")
-
-# Save product info
-info_filename = os.path.join("product_data", f"{safe_product_name}_info.txt")
-with open(info_filename, "w", encoding="utf-8") as f:
-    f.write(f"Product Name: {product_name}\n")
-    f.write(f"Price: {price}\n")
-    f.write(f"Rating: {rating}\n")
-    f.write(f"Image URL: {product_img_url or 'N/A'}\n")
-
-print(f"✅ Product data saved to {info_filename}")
+print(json.dumps(product_info))  # 👈 Print so it can be read by subprocess

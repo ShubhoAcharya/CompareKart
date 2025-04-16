@@ -17,15 +17,3 @@ CREATE TABLE IF NOT EXISTS products (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Optional: Insert sample data for testing
-INSERT INTO products (
-    original_url, modified_url, name, price, rating, image_link, graph_data_link
-) VALUES (
-    'https://www.amazon.in/dp/exampleproduct',
-    'https://www.amazon.in/exampleproduct',
-    'Sample Product Name',
-    999.99,
-    4.5,
-    'https://images.example.com/sample.jpg',
-    'https://yourdomain.com/graphs/sample_product_graph.json'
-);
