@@ -186,16 +186,6 @@ def process_url():
             print("❌ Failed to parse product data:", e)
             return jsonify({'status': 'error', 'message': 'Invalid JSON from product_data.py'}), 500
 
-        # Step 3: Run graph.py
-        print("\nStep 3: Running graph.py...")
-        graph_proc = run(["python", "./app/graph.py", modified_url], stdout=PIPE, stderr=PIPE, text=True)
-        if graph_proc.returncode != 0:
-            return jsonify({'status': 'error', 'message': 'Graph generation failed'}), 500
-
-        graph_output_lines = graph_proc.stdout.strip().splitlines()
-        raw_path = graph_output_lines[-1] if graph_output_lines else ""
-        graph_file_path = raw_path.replace("\\", "/")
-
         # Prepare data for database
         database_txt = 'database_data.txt'
         with open(database_txt, 'w', encoding='utf-8') as f:
@@ -203,12 +193,11 @@ def process_url():
             f.write(f"Price: {product_details.get('Price')}\n")
             f.write(f"Rating: {product_details.get('Rating')}\n")
             f.write(f"Image URL: {product_details.get('Image URL')}\n")
-            f.write(f"Graph Path: {graph_file_path}\n")
 
         print("📝 Data written to database_data.txt")
 
-        # Step 4: Update database with product details
-        print("\nStep 4: Updating product details in database...")
+        # Step 3: Update database with product details
+        print("\nStep 3: Updating product details in database...")
         with open(database_txt, 'r', encoding='utf-8') as f:
             lines = f.readlines()
             temp_data = {}
@@ -231,15 +220,13 @@ def process_url():
                     SET name = :name,
                         price = :price,
                         rating = :rating,
-                        image_link = :image_link,
-                        graph_data_link = :graph_data_link
+                        image_link = :image_link
                     WHERE id = :id
                 """), {
                     "name": temp_data.get("Name"),
                     "price": cleaned_price,
                     "rating": temp_data.get("Rating"),
                     "image_link": temp_data.get("Image URL"),
-                    "graph_data_link": temp_data.get("Graph Path"),
                     "id": inserted_id
                 })
                 trans.commit()
