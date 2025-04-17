@@ -38,22 +38,37 @@
     </header>
 
     <main>
-        <section class="product-display">
-            <div id="productDetails" class="product-card">
-                <!-- Product details will be dynamically loaded here -->
-            </div>
-            <button id="compareButton" class="compare-button">Compare</button>
-        </section>
-
-        <!-- Price History Graph Section -->
-        <section class="price-history-graph">
-            <div class="price-summary">
-                <h2>Price Summary (Last 4 Months)</h2>
-                <p id="lowest-price" class="price-label lowest-price"></p>
-                <p id="average-price" class="price-label average-price"></p>
-            </div>
-            <div id="chart-container"></div>
-        </section>
+        <div class="product-main-flex">
+            <section class="product-info-section">
+                <div id="productDetails" class="product-card">
+                    <!-- Product details will be dynamically loaded here -->
+                    <!-- Example: -->
+                    <!--
+                    <img src="..." class="product-image" alt="Product">
+                    <div class="product-name">Product Name</div>
+                    <div class="product-price">₹1234</div>
+                    <div class="product-rating">4.5 ★</div>
+                    <div class="star-rating">
+                        <span class="star">&#9733;</span>
+                        <span class="star">&#9733;</span>
+                        <span class="star">&#9733;</span>
+                        <span class="star">&#9733;</span>
+                        <span class="star empty">&#9733;</span>
+                    </div>
+                    -->
+                </div>
+                <button class="buy-now-btn" id="buyNowBtn">Buy Now</button>
+                <button id="compareButton" class="compare-button">Compare</button>
+            </section>
+            <section class="graph-section">
+                <div class="price-summary">
+                    <h2>Price Summary (Last 4 Months)</h2>
+                    <p id="lowest-price" class="price-label lowest-price"></p>
+                    <p id="average-price" class="price-label average-price"></p>
+                </div>
+                <div id="chart-container"></div>
+            </section>
+        </div>
     </main>
 
     <footer>

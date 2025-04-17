@@ -258,3 +258,26 @@ def process_url():
     except Exception as e:
         print("🔥 Unhandled error in process_url:", e)
         return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@main.route('/get_product_details/<int:id>', methods=['GET'])
+def get_product_details(id):
+    with engine.connect() as connection:
+        result = connection.execute(
+            text("SELECT name, price, rating, image_link, original_url FROM products WHERE id = :id"),
+            {"id": id}
+        ).fetchone()
+        if result:
+            # Format price as ₹1,699
+            price = f"₹{int(result.price):,}" if result.price is not None else "N/A"
+            return jsonify({
+                "status": "success",
+                "product": {
+                    "name": result.name,
+                    "price": price,
+                    "rating": str(result.rating),
+                    "imageUrl": result.image_link,
+                    "buy_link": result.original_url
+                }
+            })
+        else:
+            return jsonify({"status": "error", "message": "Product not found"}), 404

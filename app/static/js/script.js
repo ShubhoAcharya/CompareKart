@@ -101,12 +101,11 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Handle paste event
     productUrlInput.addEventListener("paste", function () {
-        console.log("Paste event triggered"); // Debug log
+        console.log("Paste event triggered");
         setTimeout(() => {
             const productUrl = productUrlInput.value.trim();
-            console.log("Pasted URL:", productUrl); // Debug log
+            console.log("Pasted URL:", productUrl);
             if (productUrl) {
-                // Send the URL to the backend to process it
                 fetch('/process_url', {
                     method: 'POST',
                     headers: {
@@ -116,21 +115,22 @@ document.addEventListener("DOMContentLoaded", function() {
                 })
                 .then(response => response.json())
                 .then(data => {
-                    if (data.status === 'success') {
-                        console.log(`URL processed successfully. Row ID: ${data.id}`);
-                    } else if (data.status === 'exists') {
-                        console.log(`URL already exists in the database. Row ID: ${data.id}`);
+                    if (data.status === 'success' || data.status === 'exists') {
+                        console.log(`Redirecting to /product_display for ID: ${data.id}`);
+                        window.location.href = `/product_display?id=${data.id}`;
                     } else {
                         console.error("Error:", data.message);
+                        alert("Error processing URL: " + data.message);
                     }
                 })
                 .catch((error) => {
                     console.error("Error:", error);
+                    alert("Error occurred while processing the URL.");
                 });
             }
-        }, 100); // Delay to ensure the pasted value is available
+        }, 100);
     });
-
+    
     // Function to process the URL
     function processUrl(productUrl) {
         console.log("Processing URL:", productUrl); // Debug log

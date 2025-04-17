@@ -5,36 +5,47 @@ document.addEventListener("DOMContentLoaded", function () {
     const resultsDiv = document.getElementById("results");
     const comparisonTable = document.getElementById("comparisonTable");
 
-    // Simulate fetching product details (replace with actual API call if needed)
-    function fetchProductDetails() {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                resolve({
-                    name: "Noise Icon 4 With Stunning 1.96'' AMOLED Display, Metallic Finish, BT Calling Smartwatch",
-                    price: "₹1,699",
-                    rating: "4.1",
-                    imageUrl: "https://rukminim2.flixcart.com/image/612/612/xif0q/smartwatch/n/v/1/-original-imah6s6pq7wxa4u6.jpeg?q=70",
-                });
-            }, 1000);
-        });
+    // Check if an ID is available (e.g., passed via query param or localStorage)
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get('id');
+    if (productId) {
+        fetch(`/get_product_details/${productId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "success") {
+                    renderProduct(data.product);
+                } else {
+                    productDetailsDiv.innerHTML = `<p>Product not found.</p>`;
+                }
+            });
+    } else {
+        // Fallback: Simulate fetching product details (for demo)
+        fetchProductDetails().then(renderProduct);
     }
 
-    // Load product details
-    fetchProductDetails()
-        .then((product) => {
-            productDetailsDiv.innerHTML = `
-                <div class="product-card">
-                    <img src="${product.imageUrl}" alt="${product.name}" class="product-image">
-                    <h3 class="product-name">${product.name}</h3>
-                    <p class="product-price"><strong>Price:</strong> ${product.price}</p>
-                    <p class="product-rating"><strong>Rating:</strong> ${product.rating}</p>
-                </div>
-            `;
-        })
-        .catch((error) => {
-            console.error("Error fetching product details:", error);
-            productDetailsDiv.innerHTML = `<p>Failed to load product details. Please try again later.</p>`;
-        });
+    function renderProduct(product) {
+        productDetailsDiv.innerHTML = `
+            <div class="product-card">
+                <img src="${product.imageUrl}" alt="${product.name}" class="product-image">
+                <h3 class="product-name">${product.name}</h3>
+                <p class="product-price"><strong>Price:</strong> ${product.price}</p>
+                <p class="product-rating"><strong>Rating:</strong> ${product.rating}</p>
+                ${renderStars(product.rating)}
+            </div>
+        `;
+        document.getElementById('buyNowBtn').onclick = function() {
+            window.open(product.buy_link, '_blank');
+        };
+    }
+
+    function renderStars(rating) {
+        const maxStars = 5;
+        let html = '';
+        for (let i = 1; i <= maxStars; i++) {
+            html += `<span class="star${i <= Math.round(rating) ? '' : ' empty'}">&#9733;</span>`;
+        }
+        return `<div class="star-rating">${html}</div>`;
+    }
 
     // Scroll to top functionality
     const scrollToTopButton = document.getElementById("scrollToTop");
