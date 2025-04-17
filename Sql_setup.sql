@@ -13,7 +13,6 @@ CREATE TABLE IF NOT EXISTS products (
     price NUMERIC(10,2),
     rating NUMERIC(3,2),
     image_link TEXT,
-    graph_data_link TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

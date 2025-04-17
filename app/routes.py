@@ -94,11 +94,6 @@ def clean_price(price_str):
         print(f"An error occurred in clean_price: {e}")
         return 0.0
 
-def save_urls_to_txt(original_url, modified_url):
-    with open('url_history.txt', 'a') as f:
-        f.write(f"Original URL: {original_url}\n")
-        f.write(f"Modified URL: {modified_url}\n")
-        f.write("-" * 50 + "\n")
 
 @main.route('/process_url', methods=['POST'])
 def process_url():
@@ -116,13 +111,24 @@ def process_url():
             try:
                 # Check if URL already exists
                 existing = connection.execute(
-                    text("SELECT id FROM products WHERE original_url = :url"),
+                    text("SELECT id, modified_url FROM products WHERE original_url = :url"),
                     {"url": product_url}
                 ).fetchone()
                 
                 if existing:
                     print(f"✅ Found existing ID: {existing.id}")
                     trans.commit()
+                    # Run graph.py with the modified_url and save to graph_data.json
+                    from subprocess import run, PIPE
+                    print("\nRunning graph.py for found URL...")
+                    graph_proc = run(
+                        ["python", "./app/graph.py", existing.modified_url, "graph_data.json"],
+                        stdout=PIPE, stderr=PIPE, text=True
+                    )
+                    if graph_proc.returncode != 0:
+                        print("❌ graph.py error:", graph_proc.stderr)
+                        return jsonify({'status': 'error', 'message': 'Graph script failed'}), 500
+                    print("✅ Graph data updated for found URL.")
                     return jsonify({'status': 'exists', 'id': existing.id}), 200
 
                 # Get the next sequential ID
@@ -157,9 +163,6 @@ def process_url():
         with open('temp.txt', 'r') as f:
             modified_url = f.read().strip()
         print(f"Modified URL: {modified_url}")
-
-        # Save URLs to text file
-        save_urls_to_txt(product_url, modified_url)
 
         with engine.connect() as connection:
             trans = connection.begin()
@@ -234,6 +237,17 @@ def process_url():
                 trans.rollback()
                 print(f"❌ Database error: {e}")
                 return jsonify({'status': 'error', 'message': 'Database update failed'}), 500
+
+        # Step 4: Run graph.py with the modified_url and save to graph_data.json
+        print("\nStep 4: Running graph.py for new URL...")
+        graph_proc = run(
+            ["python", "./app/graph.py", modified_url, "graph_data.json"],
+            stdout=PIPE, stderr=PIPE, text=True
+        )
+        if graph_proc.returncode != 0:
+            print("❌ graph.py error:", graph_proc.stderr)
+            return jsonify({'status': 'error', 'message': 'Graph script failed'}), 500
+        print("✅ Graph data updated for new URL.")
 
         print("✅ Final data saved successfully to database.")
         return jsonify({
