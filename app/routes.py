@@ -117,21 +117,50 @@ def process_url():
                 
                 if existing:
                     print(f"✅ Found existing ID: {existing.id}")
-                    trans.commit()
-                    # Run graph.py with the modified_url and save to graph_data.json
-                    from subprocess import run, PIPE
-                    print("\nRunning graph.py for found URL...")
-                    graph_proc = run(
-                        ["python", "./app/graph.py", existing.modified_url, "graph_data.json"],
+                    # Run product_data.py with the modified_url
+                    print("\nRunning product_data.py for existing URL...")
+                    product_proc = run(
+                        ["python", "./app/product_data.py", existing.modified_url],
                         stdout=PIPE, stderr=PIPE, text=True
                     )
-                    if graph_proc.returncode != 0:
-                        print("❌ graph.py error:", graph_proc.stderr)
-                        return jsonify({'status': 'error', 'message': 'Graph script failed'}), 500
-                    print("✅ Graph data updated for found URL.")
-                    return jsonify({'status': 'exists', 'id': existing.id}), 200
+                    
+                    if product_proc.returncode != 0:
+                        trans.commit()
+                        print("❌ product_data.py error:", product_proc.stderr)
+                        return jsonify({'status': 'error', 'message': 'Product data script failed'}), 500
+                    
+                    try:
+                        result = json.loads(product_proc.stdout)
+                        product_details = result.get("product", {})
+                        
+                        # Update database with new product details
+                        cleaned_price = clean_price(product_details.get("Price"))
+                        
+                        connection.execute(text("""
+                            UPDATE products
+                            SET name = :name,
+                                price = :price,
+                                rating = :rating,
+                                image_link = :image_link
+                            WHERE id = :id
+                        """), {
+                            "name": product_details.get("Product Name"),
+                            "price": cleaned_price,
+                            "rating": product_details.get("Rating"),
+                            "image_link": product_details.get("Image URL"),
+                            "id": existing.id
+                        })
+                        
+                        trans.commit()
+                        print("✅ Product data updated for existing URL.")
+                        return jsonify({'status': 'exists', 'id': existing.id}), 200
+                        
+                    except json.JSONDecodeError as e:
+                        trans.rollback()
+                        print("❌ Failed to parse product data:", e)
+                        return jsonify({'status': 'error', 'message': 'Invalid JSON from product_data.py'}), 500
 
-                # Get the next sequential ID
+                # If URL doesn't exist, proceed with new entry
                 next_id = get_next_sequence_id(connection)
                 print(f"Next available ID: {next_id}")
 
@@ -154,7 +183,7 @@ def process_url():
                 print(f"❌ Database error: {e}")
                 return jsonify({'status': 'error', 'message': 'Database operation failed'}), 500
 
-        # Step 1: Run buyhatke_url.py
+        # For new URLs, first run buyhatke_url.py
         print("\nStep 1: Running buyhatke_url.py...")
         buyhatke_proc = run(["python", "./app/buyhatke_url.py", product_url], stdout=PIPE, stderr=PIPE, text=True)
         if buyhatke_proc.returncode != 0:
@@ -164,6 +193,7 @@ def process_url():
             modified_url = f.read().strip()
         print(f"Modified URL: {modified_url}")
 
+        # Update database with modified URL
         with engine.connect() as connection:
             trans = connection.begin()
             try:
@@ -184,82 +214,51 @@ def process_url():
             return jsonify({'status': 'error', 'message': 'Product data script failed'}), 500
 
         try:
-            product_details = json.loads(product_proc.stdout)
+            result = json.loads(product_proc.stdout)
+            product_details = result.get("product", {})
+            
+            # Update database with product details
+            cleaned_price = clean_price(product_details.get("Price"))
+            
+            with engine.connect() as connection:
+                trans = connection.begin()
+                try:
+                    connection.execute(text("""
+                        UPDATE products
+                        SET name = :name,
+                            price = :price,
+                            rating = :rating,
+                            image_link = :image_link
+                        WHERE id = :id
+                    """), {
+                        "name": product_details.get("Product Name"),
+                        "price": cleaned_price,
+                        "rating": product_details.get("Rating"),
+                        "image_link": product_details.get("Image URL"),
+                        "id": inserted_id
+                    })
+                    trans.commit()
+                except Exception as e:
+                    trans.rollback()
+                    print(f"❌ Database error: {e}")
+                    return jsonify({'status': 'error', 'message': 'Database update failed'}), 500
+
+            print("✅ Final data saved successfully to database.")
+            return jsonify({
+                'status': 'success',
+                'message': 'URL processed and data saved',
+                'id': inserted_id
+            }), 200
+
         except json.JSONDecodeError as e:
             print("❌ Failed to parse product data:", e)
             return jsonify({'status': 'error', 'message': 'Invalid JSON from product_data.py'}), 500
 
-        # Prepare data for database
-        database_txt = 'database_data.txt'
-        with open(database_txt, 'w', encoding='utf-8') as f:
-            f.write(f"Name: {product_details.get('Product Name')}\n")
-            f.write(f"Price: {product_details.get('Price')}\n")
-            f.write(f"Rating: {product_details.get('Rating')}\n")
-            f.write(f"Image URL: {product_details.get('Image URL')}\n")
-
-        print("📝 Data written to database_data.txt")
-
-        # Step 3: Update database with product details
-        print("\nStep 3: Updating product details in database...")
-        with open(database_txt, 'r', encoding='utf-8') as f:
-            lines = f.readlines()
-            temp_data = {}
-            for line in lines:
-                key, value = line.strip().split(': ', 1)
-                temp_data[key] = value
-
-            cleaned_price = clean_price(temp_data.get("Price"))
-
-        print("🧾 Final DB Update Payload:")
-        for k, v in temp_data.items():
-            print(f"{k}: {v}")
-        print("Cleaned Price:", cleaned_price)
-
-        with engine.connect() as connection:
-            trans = connection.begin()
-            try:
-                connection.execute(text("""
-                    UPDATE products
-                    SET name = :name,
-                        price = :price,
-                        rating = :rating,
-                        image_link = :image_link
-                    WHERE id = :id
-                """), {
-                    "name": temp_data.get("Name"),
-                    "price": cleaned_price,
-                    "rating": temp_data.get("Rating"),
-                    "image_link": temp_data.get("Image URL"),
-                    "id": inserted_id
-                })
-                trans.commit()
-            except Exception as e:
-                trans.rollback()
-                print(f"❌ Database error: {e}")
-                return jsonify({'status': 'error', 'message': 'Database update failed'}), 500
-
-        # Step 4: Run graph.py with the modified_url and save to graph_data.json
-        print("\nStep 4: Running graph.py for new URL...")
-        graph_proc = run(
-            ["python", "./app/graph.py", modified_url, "graph_data.json"],
-            stdout=PIPE, stderr=PIPE, text=True
-        )
-        if graph_proc.returncode != 0:
-            print("❌ graph.py error:", graph_proc.stderr)
-            return jsonify({'status': 'error', 'message': 'Graph script failed'}), 500
-        print("✅ Graph data updated for new URL.")
-
-        print("✅ Final data saved successfully to database.")
-        return jsonify({
-            'status': 'success',
-            'message': 'URL processed and data saved',
-            'id': inserted_id
-        }), 200
-
     except Exception as e:
         print("🔥 Unhandled error in process_url:", e)
         return jsonify({'status': 'error', 'message': str(e)}), 500
-
+    
+    
 @main.route('/get_product_details/<int:id>', methods=['GET'])
 def get_product_details(id):
     with engine.connect() as connection:

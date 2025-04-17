@@ -11,7 +11,7 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 import sys
 
-def extract_graph_data_selenium(url, output_file='graph_data.json'):
+def extract_graph_data_selenium(url, output_folder='Graph_folder'):
     print("[1/6] Setting up Chrome options...")
     options = Options()
     options.add_argument("--disable-gpu")
@@ -20,6 +20,8 @@ def extract_graph_data_selenium(url, output_file='graph_data.json'):
 
     print("[2/6] Launching browser...")
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+
+    output_file = None  # To track where JSON is saved
 
     try:
         print(f"[3/6] Opening URL: {url}")
@@ -33,6 +35,14 @@ def extract_graph_data_selenium(url, output_file='graph_data.json'):
             print(" Could not extract product name, deriving from URL...")
             parsed_url = urlparse(url)
             product_name = unquote(parsed_url.path.split('/')[-1].split('-price')[0].strip().replace(" ", "_"))
+
+        # Add timestamp to filename to avoid overwrite
+        timestamp = int(time.time())
+        safe_name = "".join(c if c.isalnum() or c in " _-" else "_" for c in product_name)
+        filename = f"{safe_name}_{timestamp}.json"
+
+        os.makedirs(output_folder, exist_ok=True)
+        output_file = os.path.join(output_folder, filename)
 
         # Extract chart data
         try:
@@ -87,7 +97,6 @@ def extract_graph_data_selenium(url, output_file='graph_data.json'):
             "lowest_price": lowest_price
         }
 
-        # Always save to the specified output_file (default: graph_data.json in project root)
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(graph_data, f, indent=4, ensure_ascii=False)
 
@@ -101,15 +110,14 @@ def extract_graph_data_selenium(url, output_file='graph_data.json'):
 
     return output_file
 
+
 # === CLI Usage ===
 if __name__ == "__main__":
     if len(sys.argv) > 1:
         user_url = sys.argv[1]
-        # If a second argument is provided, use it as output_file, else default to graph_data.json
-        output_file = sys.argv[2] if len(sys.argv) > 2 else "graph_data.json"
-        result_file = extract_graph_data_selenium(user_url, output_file)
+        result_file = extract_graph_data_selenium(user_url)
         if result_file:
-            print(result_file)
+            print(result_file)  # Output path to be used by backend
         else:
             print(" Failed to save graph data.")
     else:
