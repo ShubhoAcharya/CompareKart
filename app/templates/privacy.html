@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Privacy Policy - CompareKart</title>
+  <link rel="icon" type="image/x-icon" href="../static/images/cart_4628369.png">
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/condition.css') }}">
+</head>
+<body>
+  <header>
+    <div class="logo">CompareKart</div>
+    <nav>
+      <a href="{{ url_for('main.index') }}">Home</a>
+      <a href="{{ url_for('main.privacy') }}">Privacy Policy</a>
+      <a href="{{ url_for('main.terms') }}">Terms of Service</a>
+      <a href="{{ url_for('main.about') }}">About Us</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="section">
+      <h1>Privacy Policy</h1>
+      <p>Your privacy matters. At CompareKart, we collect only the necessary information to deliver alerts and product tracking services effectively.</p>
+      <ul>
+        <li>Emails are stored securely and only used for sending price alerts.</li>
+        <li>We never share personal data with third parties.</li>
+        <li>Data is encrypted during transmission.</li>
+        <li>You can opt out of alerts at any time.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; <span id="currentYear"></span> Comparekart. All rights reserved.</p>
+  </footer>
+  <script>
+    document.getElementById('currentYear').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

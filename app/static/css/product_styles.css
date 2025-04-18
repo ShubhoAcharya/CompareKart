@@ -135,6 +135,63 @@ main {
     text-align: center;
 }
 
+/* --- 🌟 Modern Section Header --- */
+.modern-section-header {
+    text-align: center;
+    padding-bottom: 1.5rem;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid rgba(79, 70, 229, 0.1);
+    animation: fadeInUp 0.5s ease-in-out both;
+}
+
+.modern-section-header h2 {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #1f2937;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    background: linear-gradient(90deg, #4f46e5, #14b8a6);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.modern-section-header .icon i {
+    font-size: 1.5rem;
+    color: #14b8a6;
+    animation: bounce 1.2s infinite alternate ease-in-out;
+}
+
+.modern-section-header p {
+    color: #6b7280;
+    font-size: 1rem;
+    margin-top: 0.5rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* ✨ Animations */
+@keyframes bounce {
+    0%   { transform: translateY(0); }
+    100% { transform: translateY(-6px); }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+
 /* Product Display */
 .product-display {
     padding: 2rem;
@@ -852,3 +909,66 @@ footer {
 }
 
 /* Responsive Styles */
+/* --- 🔔 Modern Price Alert Form --- */
+.price-alert-form {
+    width: 100%;
+    background: linear-gradient(135deg, #fdfbfb, #ebedee);
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease-in-out;
+}
+
+.price-alert-form h3 {
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+    color: #4f46e5;
+    font-weight: 700;
+}
+
+.price-alert-form input {
+    width: 90%;
+    padding: 12px 16px;
+    margin: 0.5rem 0;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    font-size: 1rem;
+    outline: none;
+    background: white;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.price-alert-form input:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+}
+
+.price-alert-form button {
+    width: 100%;
+    padding: 0.8rem;
+    background: linear-gradient(90deg, #4f46e5 0%, #14b8a6 100%);
+    color: white;
+    border: none;
+    border-radius: 30px;
+    font-weight: 600;
+    font-size: 1.05rem;
+    cursor: pointer;
+    margin-top: 0.8rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(20, 184, 166, 0.25);
+}
+
+.price-alert-form button:hover {
+    background: linear-gradient(90deg, #14b8a6 0%, #4f46e5 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(20, 184, 166, 0.4);
+}
+
+.alert-message {
+    margin-top: 0.8rem;
+    color: #10b981;
+    font-size: 0.95rem;
+    font-weight: 500;
+}

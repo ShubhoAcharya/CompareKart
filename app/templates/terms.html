@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Terms & Services - CompareKart</title>
+    <link rel="icon" type="image/x-icon" href="../static/images/cart_4628369.png">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/condition.css') }}">
+</head>
+<body>
+  <header>
+    <div class="logo">CompareKart</div>
+    <nav>
+        <a href="{{ url_for('main.index') }}">Home</a>
+        <a href="{{ url_for('main.privacy') }}">Privacy Policy</a>
+        <a href="{{ url_for('main.terms') }}">Terms of Service</a>
+        <a href="{{ url_for('main.about') }}">About Us</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="section">
+      <h1>Terms & Services</h1>
+      <p>By using CompareKart, you agree to the following:</p>
+      <ul>
+        <li>Use the service only for personal, lawful purposes.</li>
+        <li>We are not responsible for pricing errors on third-party sites.</li>
+        <li>We cannot guarantee 100% uptime or email delivery.</li>
+        <li>Information is provided \"as-is\" without warranties.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; <span id="currentYear"></span> Comparekart. All rights reserved.</p>
+  </footer>
+    <script>
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+    </script>
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</body>
+</html>

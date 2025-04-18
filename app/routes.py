@@ -9,6 +9,9 @@ from app.url_checker import check_and_update_url
 from .Amazon_search_product import search_amazon
 from .Flipkart_search_product import search_flipkart_product
 
+from flask_mail import Mail, Message
+from flask import current_app
+
 main = Blueprint('main', __name__)
 
 DATABASE_URL = "postgresql://postgres:root@localhost:5432/CompareKart"
@@ -281,3 +284,43 @@ def get_product_details(id):
             })
         else:
             return jsonify({"status": "error", "message": "Product not found"}), 404
+        
+@main.route('/set_price_alert', methods=['POST'])
+def set_price_alert():
+    data = request.json
+    product_id = data.get('product_id')
+    desired_price = float(data.get('desired_price'))
+    email = data.get('email')
+
+    if not all([product_id, desired_price, email]):
+        return jsonify({'status': 'error', 'message': 'Missing data'}), 400
+
+    with engine.connect() as conn:
+        conn.execute(text("""
+            INSERT INTO price_alerts (product_id, desired_price, email)
+            VALUES (:pid, :price, :email)
+        """), {'pid': product_id, 'price': desired_price, 'email': email})
+
+    # Send confirmation email (make sure to configure Flask-Mail)
+    try:
+        mail = Mail(current_app)
+        msg = Message("CompareKart Price Alert Set!",
+                      sender="comparekart@example.com", recipients=[email])
+        msg.body = f"Your price alert of ₹{desired_price} has been set for product ID {product_id}."
+        mail.send(msg)
+    except Exception as e:
+        print("❌ Email sending failed:", e)
+
+    return jsonify({'status': 'success'})
+
+@main.route('/about')
+def about():
+    return render_template('about.html')
+
+@main.route('/terms')
+def terms():
+    return render_template('terms.html')
+
+@main.route('/privacy')
+def privacy():
+    return render_template('privacy.html')

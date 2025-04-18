@@ -1,0 +1,98 @@
+/* Base Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #f9fafb;
+    color: #1f2937;
+    line-height: 1.7;
+    padding: 0 1.5rem;
+  }
+  
+  header {
+    background: white;
+    padding: 1rem 2rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    background: linear-gradient(to right, #4f46e5, #14b8a6);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  nav a {
+    margin-left: 1.5rem;
+    text-decoration: none;
+    color: #4f46e5;
+    font-weight: 600;
+    position: relative;
+  }
+  
+  nav a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -4px;
+    width: 0%;
+    height: 2px;
+    background: #14b8a6;
+    transition: 0.3s ease;
+  }
+  
+  nav a:hover::after {
+    width: 100%;
+  }
+  
+  .section {
+    max-width: 800px;
+    margin: 3rem auto;
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  }
+  
+  .section h1 {
+    font-size: 2rem;
+    color: #4f46e5;
+    margin-bottom: 1rem;
+  }
+  
+  .section h2 {
+    font-size: 1.3rem;
+    margin-top: 2rem;
+    margin-bottom: 0.5rem;
+    color: #111827;
+  }
+  
+  .section p, .section li {
+    font-size: 1rem;
+    color: #4b5563;
+    margin-bottom: 0.5rem;
+  }
+  
+  ul {
+    list-style-type: disc;
+    margin-left: 1.5rem;
+  }
+  
+  footer {
+    text-align: center;
+    padding: 2rem 1rem;
+    font-size: 0.9rem;
+    background: #f3f4f6;
+    margin-top: 4rem;
+    color: #6b7280;
+  }
+  

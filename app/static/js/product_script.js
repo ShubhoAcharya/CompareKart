@@ -370,3 +370,36 @@ document.addEventListener("DOMContentLoaded", function () {
                 console.error('Error fetching graph data:', error);
                 alert('Failed to load graph data. Please try again later.');
             });
+// ----------------- END OF PRICE HISTORY GRAPH -------------------
+
+// ----------------- PRICE ALERT FUNCTIONALITY -------------------
+
+document.getElementById("setPriceAlertBtn").addEventListener("click", function () {
+    const price = document.getElementById("alertPrice").value;
+    const email = document.getElementById("alertEmail").value;
+    const productId = new URLSearchParams(window.location.search).get('id');
+
+    if (!price || !email || !productId) {
+        alert("Please fill all fields correctly.");
+        return;
+    }
+
+    fetch('/set_price_alert', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ product_id: productId, desired_price: price, email: email })
+    })
+    .then(res => res.json())
+    .then(data => {
+        const msg = document.getElementById("alertMsg");
+        if (data.status === "success") {
+            msg.textContent = "✅ Price alert set successfully!";
+        } else {
+            msg.textContent = "❌ Failed to set alert. Try again.";
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert("An error occurred while setting alert.");
+    });
+});

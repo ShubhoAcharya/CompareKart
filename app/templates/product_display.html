@@ -38,6 +38,15 @@
     </header>
 
     <main>
+        <div class="modern-section-header">
+            <h2>
+                <span class="icon"><i class="fas fa-bolt"></i></span>
+                Product Details & Price Alert
+            </h2>
+            <p>Stay ahead of the deals — track your favorite product and get notified instantly.</p>
+        </div>
+        
+        
         <div class="product-main-flex">
             <section class="product-info-section">
                 <div id="productDetails" class="product-card">
@@ -67,6 +76,14 @@
                     <p id="average-price" class="price-label average-price"></p>
                 </div>
                 <div id="chart-container"></div>
+                <div class="price-alert-form">
+                    <h3>Set Price Alert</h3>
+                    <input type="number" id="alertPrice" placeholder="Your desired price" required>
+                    <input type="email" id="alertEmail" placeholder="Your email" required>
+                    <button id="setPriceAlertBtn">Set Alert</button>
+                    <p id="alertMsg" class="alert-message"></p>
+                </div>
+                
             </section>
         </div>
     </main>
@@ -75,9 +92,9 @@
         <div class="footer-content">
             <p>&copy; <span id="currentYear"></span> Comparekart. All rights reserved.</p>
             <div class="footer-links">
-                <a href="#">Privacy Policy</a>
-                <a href="#">Terms of Service</a>
-                <a href="#">About Us</a>
+                <a href="{{ url_for('main.privacy') }}">Privacy Policy</a>
+                <a href="{{ url_for('main.terms') }}">Terms of Service</a>
+                <a href="{{ url_for('main.about') }}">About Us</a>
             </div>
         </div>
     </footer>
