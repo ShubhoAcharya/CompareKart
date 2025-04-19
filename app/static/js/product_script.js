@@ -5,6 +5,145 @@ document.addEventListener("DOMContentLoaded", function () {
     const resultsDiv = document.getElementById("results");
     const comparisonTable = document.getElementById("comparisonTable");
 
+    const compareModal = document.getElementById("compareModal");
+    const similarProductsBtn = document.getElementById("similarProductsBtn");
+    const pasteUrlBtn = document.getElementById("pasteUrlBtn");
+    const urlInputContainer = document.getElementById("urlInputContainer");
+    const productUrlInput = document.getElementById("productUrlInput");
+    const submitUrlBtn = document.getElementById("submitUrlBtn");
+    const urlError = document.getElementById("urlError");
+    const closeModal = document.querySelector(".close");
+    const comparisonContainer = document.createElement("div");
+    comparisonContainer.className = "comparison-container";
+    comparisonContainer.style.display = "none";
+    document.querySelector("main").appendChild(comparisonContainer);
+
+    // Replace the existing compareButton event listener with this:
+    compareButton.addEventListener("click", function() {
+        compareModal.style.display = "block";
+    });
+
+    // Close modal when clicking X
+    closeModal.addEventListener("click", function() {
+        compareModal.style.display = "none";
+    });
+
+    // Close modal when clicking outside
+    window.addEventListener("click", function(event) {
+        if (event.target === compareModal) {
+            compareModal.style.display = "none";
+        }
+    });
+
+    // Similar products button
+    similarProductsBtn.addEventListener("click", function() {
+        compareModal.style.display = "none";
+        // Show loader
+        loader.style.display = "block";
+        
+        // Existing comparison logic
+        setTimeout(function() {
+            fetch('/compare')
+                .then(response => response.json())
+                .then(data => {
+                    loader.style.display = "none";
+                    comparisonContainer.style.display = "none"; // Hide our custom container
+                    resultsDiv.style.display = "block";
+                    comparisonTable.style.display = "block";
+                    comparisonTable.innerHTML = generateTable(data);
+                    
+                    resultsDiv.innerHTML = `
+                        <div class="link-container">
+                            <a href="${data.product_urls.amazon_link}" class="styled-link amazon-link" target="_blank">
+                                <i class="fas fa-shopping-cart"></i> Amazon: Go to Amazon
+                            </a>
+                            <a href="${data.product_urls.flipkart_link}" class="styled-link flipkart-link" target="_blank">
+                                <i class="fas fa-shopping-cart"></i> Flipkart: Go to Flipkart
+                            </a>
+                        </div>
+                    `;
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    loader.style.display = "none";
+                });
+        }, 1500);
+    });
+
+    // Paste URL button
+    pasteUrlBtn.addEventListener("click", function() {
+        urlInputContainer.style.display = "block";
+    });
+
+    // Submit URL for comparison
+    submitUrlBtn.addEventListener("click", function() {
+        const url = productUrlInput.value.trim();
+        console.log("Submit URL button clicked with URL:", url);
+        
+        if (!url) {
+            console.log("No URL entered");
+            alert("Please enter a URL");
+            return;
+        }
+        
+        const flipkartPattern = /https?:\/\/(www\.)?flipkart\.com\/.*/;
+        const amazonPattern = /https?:\/\/(www\.)?amazon\.in\/.*/;
+        
+        if (!flipkartPattern.test(url) && !amazonPattern.test(url)) {
+            console.log("Invalid URL format:", url);
+            alert("Please enter a valid Amazon or Flipkart product URL");
+            return;
+        }
+        
+        console.log("Valid URL, proceeding with comparison");
+        compareModal.style.display = "none";
+        loader.style.display = "block";
+        
+        const productId = new URLSearchParams(window.location.search).get('id');
+        console.log("Current product ID:", productId);
+        
+        // First fetch current product
+        fetch(`/get_product_details/${productId}`)
+            .then(res => {
+                console.log("Current product response status:", res.status);
+                if (!res.ok) throw new Error("Failed to fetch current product");
+                return res.json();
+            })
+            .then(currentProduct => {
+                console.log("Successfully fetched current product:", currentProduct);
+                
+                // Then fetch comparison product
+                return fetch('/compare_with_url', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: url })
+                })
+                .then(res => {
+                    console.log("Comparison product response status:", res.status);
+                    if (!res.ok) throw new Error("Failed to fetch comparison product");
+                    return res.json();
+                })
+                .then(newProduct => {
+                    console.log("Successfully fetched comparison product:", newProduct);
+                    
+                    loader.style.display = "none";
+                    comparisonContainer.style.display = "flex";
+                    resultsDiv.style.display = "none";
+                    comparisonTable.style.display = "none";
+                    
+                    comparisonContainer.innerHTML = `
+                        <!-- Your comparison HTML here -->
+                    `;
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                loader.style.display = "none";
+                alert('Error: ' + error.message);
+            });
+    });
+
+
     // Check if an ID is available (e.g., passed via query param or localStorage)
     const urlParams = new URLSearchParams(window.location.search);
     const productId = urlParams.get('id');
@@ -65,59 +204,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-    // Compare button functionality
-    compareButton.addEventListener("click", function () {
-        // Show loader and hide results and comparison table
-        loader.style.display = "block";
-        resultsDiv.style.display = "none";
-        comparisonTable.style.display = "none";
-
-        setTimeout(function () {
-            fetch('/compare')
-                .then(response => response.json())
-                .then(data => {
-                    // Hide loader and show results and comparison table
-                    loader.style.display = "none";
-                    resultsDiv.style.display = "block";
-                    comparisonTable.style.display = "block";
-
-                    comparisonTable.innerHTML = generateTable(data);
-
-                    resultsDiv.innerHTML = `
-                        <div class="link-container">
-                            <a href="${data.product_urls.amazon_link}" class="styled-link amazon-link" target="_blank">
-                                <i class="fas fa-shopping-cart"></i> Amazon: Go to Amazon
-                            </a>
-                            <a href="${data.product_urls.flipkart_link}" class="styled-link flipkart-link" target="_blank">
-                                <i class="fas fa-shopping-cart"></i> Flipkart: Go to Flipkart
-                            </a>
-                        </div>
-                    `;
-                })
-                .catch((error) => {
-                    console.error('Error:', error);
-                });
-        }, 1500);
-    });
-
-    function generateTable(data) {
-        let table = '<table><thead><tr>';
-        // Create table headers
-        data.headers.forEach(header => {
-            table += `<th>${header}</th>`;
-        });
-        table += '</tr></thead><tbody>';
-        // Create table rows
-        data.rows.forEach(row => {
-            table += '<tr>';
-            row.forEach(cell => {
-                table += `<td>${cell}</td>`;
-            });
-            table += '</tr>';
-        });
-        table += '</tbody></table>';
-        return table;
-    }
 });
 
 // ----------------- PRICE HISTORY GRAPH -------------------
@@ -379,8 +465,16 @@ document.getElementById("setPriceAlertBtn").addEventListener("click", function (
     const email = document.getElementById("alertEmail").value;
     const productId = new URLSearchParams(window.location.search).get('id');
 
+    // Email validation regex
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    
     if (!price || !email || !productId) {
         alert("Please fill all fields correctly.");
+        return;
+    }
+    
+    if (!emailRegex.test(email)) {
+        alert("Please enter a valid email address");
         return;
     }
 

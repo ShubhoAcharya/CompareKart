@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Price Alert Confirmation - CompareKart</title>
+    <style type="text/css">
+        /* Modern CSS Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+        }
+        
+        /* Base Styles */
+        body {
+            background-color: #f8fafc;
+            color: #334155;
+            line-height: 1.6;
+            padding: 20px 0;
+        }
+        
+        /* Email Container */
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Header */
+        .email-header {
+            background: #ffffff;
+            padding: 32px 20px;
+            text-align: center;
+            position: relative;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            background: linear-gradient(to right, #4f46e5, #14b8a6);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+        
+        .header-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+            color: #1e293b;
+        }
+        
+        .header-subtitle {
+            font-size: 16px;
+            color: #64748b;
+        }
+        
+        /* Content */
+        .email-content {
+            padding: 32px;
+        }
+        
+        .greeting {
+            font-size: 18px;
+            margin-bottom: 24px;
+            color: #1e293b;
+        }
+        
+        /* Product Card */
+        .product-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 24px 0;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        .product-image-container {
+            height: 180px;
+            background: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .product-image {
+            max-height: 100%;
+            max-width: 100%;
+            object-fit: contain;
+        }
+        
+        .product-details {
+            padding: 20px;
+        }
+        
+        .product-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 16px;
+        }
+        
+        .price-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        
+        .price-box {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .current-price-box {
+            background: #f1f5f9;
+            margin-right: 8px;
+        }
+        
+        .alert-price-box {
+            background: #ecfdf5;
+            margin-left: 8px;
+        }
+        
+        .price-label {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+        
+        .price-value {
+            font-size: 20px;
+            font-weight: 700;
+        }
+        
+        .current-price {
+            color: #1e293b;
+        }
+        
+        .alert-price {
+            color: #10b981;
+        }
+        
+        /* Alert Status */
+        .alert-status {
+            display: inline-flex;
+            align-items: center;
+            background: #f0f9ff;
+            color: #0369a1;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 12px;
+        }
+        
+        .alert-icon {
+            margin-right: 8px;
+            font-size: 16px;
+        }
+        
+        /* CTA Button - Updated with white text */
+        .cta-container {
+            text-align: center;
+            margin: 28px 0;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(to right, #14b8a6, #4f46e5);
+            color: white !important; /* Force white text */
+            text-decoration: none;
+            padding: 14px 32px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            box-shadow: 0 4px 12px rgba(20, 184, 166, 0.25);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(20, 184, 166, 0.3);
+            color: white !important; /* Maintain white text on hover */
+        }
+        
+        /* Footer */
+        .email-footer {
+            padding: 24px;
+            text-align: center;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .footer-text {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+        
+        .social-links {
+            margin: 16px 0;
+        }
+        
+        .social-link {
+            display: inline-block;
+            margin: 0 8px;
+            color: #64748b;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        
+        .social-link:hover {
+            color: #4f46e5;
+        }
+        
+        .legal-links {
+            margin-top: 16px;
+        }
+        
+        .legal-link {
+            color: #64748b;
+            text-decoration: none;
+            font-size: 12px;
+            margin: 0 8px;
+        }
+        
+        .legal-link:hover {
+            text-decoration: underline;
+        }
+        
+        /* Responsive */
+        @media screen and (max-width: 480px) {
+            .email-content {
+                padding: 24px;
+            }
+            
+            .price-container {
+                flex-direction: column;
+            }
+            
+            .price-box {
+                margin: 8px 0 !important;
+            }
+            
+            .product-image-container {
+                height: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="email-header">
+            <div class="logo">CompareKart</div>
+            <h1 class="header-title">Price Alert Confirmed!</h1>
+            <p class="header-subtitle">We'll notify you when the price drops</p>
+        </div>
+        
+        <div class="email-content">
+            <p class="greeting">Hello there,</p>
+            <p>We've successfully created your price alert for the following product:</p>
+            
+            <div class="product-card">
+                <div class="product-image-container">
+                    {% if product_image %}
+                    <img src="{{ product_image }}" alt="{{ product_name }}" class="product-image">
+                    {% else %}
+                    <div style="color: #64748b; font-size: 14px;">Product Image</div>
+                    {% endif %}
+                </div>
+                <div class="product-details">
+                    <h3 class="product-name">{{ product_name }}</h3>
+                    
+                    <div class="price-container">
+                        <div class="price-box current-price-box">
+                            <div class="price-label">Current Price</div>
+                            <div class="price-value current-price">{{ current_price }}</div>
+                        </div>
+                        <div class="price-box alert-price-box">
+                            <div class="price-label">Your Alert Price</div>
+                            <div class="price-value alert-price">{{ alert_price }}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert-status">
+                        <span class="alert-icon">🔔</span>
+                        <span>Alert Active</span>
+                    </div>
+                </div>
+            </div>
+            
+            <p>You'll receive an email notification as soon as the price reaches your target of {{ alert_price }} or below.</p>
+            
+            <div class="cta-container">
+                <a href="{{ product_url }}" class="cta-button">View Product on CompareKart</a>
+            </div>
+            
+            <p>If you have any questions about your alert, simply reply to this email.</p>
+            <p>Happy shopping!<br>The CompareKart Team</p>
+        </div>
+        
+        <div class="email-footer">
+            <p class="footer-text">Compare prices, save money, shop smarter</p>
+            
+            <div class="social-links">
+                <a href="https://facebook.com/comparekart" class="social-link">Facebook</a>
+                <a href="https://twitter.com/comparekart" class="social-link">Twitter</a>
+                <a href="https://instagram.com/comparekart" class="social-link">Instagram</a>
+            </div>
+            
+            <div class="legal-links">
+                <a href="{{ request.host_url }}privacy" class="legal-link">Privacy Policy</a>
+                <a href="{{ request.host_url }}terms" class="legal-link">Terms of Service</a>
+                <a href="{{ request.host_url }}unsubscribe" class="legal-link">Unsubscribe</a>
+            </div>
+            
+            <p class="footer-text">© {{ year }} CompareKart. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

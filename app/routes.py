@@ -1,3 +1,5 @@
+from datetime import datetime
+import re
 from flask import Blueprint, render_template, request, jsonify
 import pandas as pd
 from sqlalchemy import create_engine, text
@@ -6,6 +8,8 @@ import os
 from subprocess import run, PIPE
 
 from app.url_checker import check_and_update_url
+from app.webscraping_Flipkart import scrape_flipkart_product
+from app.webscraping_amazon import scrape_amazon_product_selenium
 from .Amazon_search_product import search_amazon
 from .Flipkart_search_product import search_flipkart_product
 
@@ -32,6 +36,18 @@ def index():
 @main.route('/product_display')
 def product_display():
     return render_template('product_display.html')
+
+@main.route('/about')
+def about():
+    return render_template('about.html')
+
+@main.route('/terms')
+def terms():
+    return render_template('terms.html')
+
+@main.route('/privacy')
+def privacy():
+    return render_template('privacy.html')
 
 @main.route('/compare', methods=['GET'])
 def compare():
@@ -294,33 +310,108 @@ def set_price_alert():
 
     if not all([product_id, desired_price, email]):
         return jsonify({'status': 'error', 'message': 'Missing data'}), 400
+    
+    # Email validation
+    email_regex = r'^[^\s@]+@[^\s@]+\.[^\s@]+$'
+    if not re.match(email_regex, email):
+        return jsonify({'status': 'error', 'message': 'Invalid email format'}), 400
 
     with engine.connect() as conn:
+        # Check if alert already exists
+        existing = conn.execute(text("""
+            SELECT id FROM price_alerts 
+            WHERE product_id = :pid AND email = :email
+        """), {'pid': product_id, 'email': email}).fetchone()
+        
+        if existing:
+            return jsonify({'status': 'error', 'message': 'Alert already exists for this email'}), 400
+            
         conn.execute(text("""
             INSERT INTO price_alerts (product_id, desired_price, email)
             VALUES (:pid, :price, :email)
         """), {'pid': product_id, 'price': desired_price, 'email': email})
 
-    # Send confirmation email (make sure to configure Flask-Mail)
+    # Get product details for email
+    with engine.connect() as conn:
+        product = conn.execute(
+            text("SELECT name, price, image_link FROM products WHERE id = :id"),
+            {"id": product_id}
+        ).fetchone()
+
+    # Send confirmation email
     try:
         mail = Mail(current_app)
-        msg = Message("CompareKart Price Alert Set!",
-                      sender="comparekart@example.com", recipients=[email])
-        msg.body = f"Your price alert of ₹{desired_price} has been set for product ID {product_id}."
+        msg = Message(
+            f"Price Alert Set for {product.name if product else 'Your Product'}",
+            sender=("CompareKart", "alerts@comparekart.com"),
+            recipients=[email]
+        )
+        
+        # HTML email template
+        msg.html = render_template(
+            'price_alert_email.html',
+            product_name=product.name if product else 'Your Product',
+            current_price=f"₹{product.price:,}" if product else 'N/A',
+            alert_price=f"₹{desired_price:,}",
+            product_image=product.image_link if product else '',
+            product_url=f"{request.host_url}product_display?id={product_id}",
+            year=datetime.now().year,
+            support_email="support@comparekart.com"
+        )
+        
         mail.send(msg)
     except Exception as e:
-        print("❌ Email sending failed:", e)
+        print(f"❌ Email sending failed: {str(e)}")
+        return jsonify({
+            'status': 'success',
+            'warning': 'Price alert was set but confirmation email could not be sent'
+        })
 
     return jsonify({'status': 'success'})
 
-@main.route('/about')
-def about():
-    return render_template('about.html')
 
-@main.route('/terms')
-def terms():
-    return render_template('terms.html')
 
-@main.route('/privacy')
-def privacy():
-    return render_template('privacy.html')
+@main.route('/compare_with_url', methods=['POST'])
+def compare_with_url():
+    try:
+        data = request.json
+        url = data.get('url')
+        
+        if not url:
+            return jsonify({'status': 'error', 'message': 'No URL provided'}), 400
+
+        print(f"Comparing with URL: {url}")  # Debug print
+
+        # Check if URL is from Flipkart or Amazon
+        flipkart_pattern = r'https?://(www\.)?flipkart\.com/.*'
+        amazon_pattern = r'https?://(www\.)?amazon\.in/.*'
+        
+        product_data = None
+        
+        if re.match(flipkart_pattern, url):
+            print("Detected Flipkart URL")
+            product_data = scrape_flipkart_product(url)
+        elif re.match(amazon_pattern, url):
+            print("Detected Amazon URL")
+            product_data = scrape_amazon_product_selenium(url)
+        else:
+            return jsonify({'status': 'error', 'message': 'Invalid URL - must be from Flipkart or Amazon'}), 400
+
+        if not product_data:
+            return jsonify({'status': 'error', 'message': 'Failed to scrape product data'}), 500
+
+        # Format the response
+        return jsonify({
+            "status": "success",
+            "product": {
+                "name": product_data.get("Product Name", "N/A"),
+                "price": product_data.get("Price", "N/A"),
+                "rating": product_data.get("Rating", "N/A"),
+                "imageUrl": product_data.get("Image URL", ""),
+                "buy_link": url
+            }
+        })
+        
+    except Exception as e:
+        print(f"Error in compare_with_url: {str(e)}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500

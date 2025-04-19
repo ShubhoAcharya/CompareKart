@@ -87,6 +87,26 @@
             </section>
         </div>
     </main>
+    <!-- Add this modal at the bottom of product_display.html, just before the closing </body> tag -->
+<div id="compareModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h3>Compare Options</h3>
+        <div class="compare-options">
+            <button id="similarProductsBtn" class="compare-option-btn">
+                <i class="fas fa-search"></i> Find Similar Products
+            </button>
+            <button id="pasteUrlBtn" class="compare-option-btn">
+                <i class="fas fa-paste"></i> Paste Product URL
+            </button>
+        </div>
+        <div id="urlInputContainer" style="display: none;">
+            <input type="text" id="productUrlInput" placeholder="Paste Amazon or Flipkart product URL">
+            <button id="submitUrlBtn">Compare</button>
+            <p id="urlError" class="error-message"></p>
+        </div>
+    </div>
+</div>
 
     <footer>
         <div class="footer-content">
@@ -107,5 +127,6 @@
     <script>
         document.getElementById('currentYear').textContent = new Date().getFullYear();
     </script>
+    
 </body>
 </html>
