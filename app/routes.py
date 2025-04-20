@@ -373,45 +373,23 @@ def set_price_alert():
 
 @main.route('/compare_with_url', methods=['POST'])
 def compare_with_url():
-    try:
-        data = request.json
-        url = data.get('url')
-        
-        if not url:
-            return jsonify({'status': 'error', 'message': 'No URL provided'}), 400
+    data = request.json
+    url = data.get('url')
+    if not url:
+        return jsonify({'status': 'error', 'message': 'No URL provided'}), 400
 
-        print(f"Comparing with URL: {url}")  # Debug print
+    # Detect Flipkart or Amazon
+    if "flipkart.com" in url:
+        product = scrape_flipkart_product(url)
+        if not product:
+            return jsonify({'status': 'error', 'message': 'Could not scrape Flipkart product'}), 500
+        product['buy_link'] = url
+    elif "amazon.in" in url:
+        product = scrape_amazon_product_selenium(url)
+        if not product:
+            return jsonify({'status': 'error', 'message': 'Could not scrape Amazon product'}), 500
+        product['buy_link'] = url
+    else:
+        return jsonify({'status': 'error', 'message': 'URL must be from Flipkart or Amazon'}), 400
 
-        # Check if URL is from Flipkart or Amazon
-        flipkart_pattern = r'https?://(www\.)?flipkart\.com/.*'
-        amazon_pattern = r'https?://(www\.)?amazon\.in/.*'
-        
-        product_data = None
-        
-        if re.match(flipkart_pattern, url):
-            print("Detected Flipkart URL")
-            product_data = scrape_flipkart_product(url)
-        elif re.match(amazon_pattern, url):
-            print("Detected Amazon URL")
-            product_data = scrape_amazon_product_selenium(url)
-        else:
-            return jsonify({'status': 'error', 'message': 'Invalid URL - must be from Flipkart or Amazon'}), 400
-
-        if not product_data:
-            return jsonify({'status': 'error', 'message': 'Failed to scrape product data'}), 500
-
-        # Format the response
-        return jsonify({
-            "status": "success",
-            "product": {
-                "name": product_data.get("Product Name", "N/A"),
-                "price": product_data.get("Price", "N/A"),
-                "rating": product_data.get("Rating", "N/A"),
-                "imageUrl": product_data.get("Image URL", ""),
-                "buy_link": url
-            }
-        })
-        
-    except Exception as e:
-        print(f"Error in compare_with_url: {str(e)}")
-        return jsonify({'status': 'error', 'message': str(e)}), 500
+    return jsonify({'status': 'success', 'product': product})

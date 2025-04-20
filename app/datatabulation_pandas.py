@@ -20,13 +20,6 @@ def read_product_data(file_path):
                 product_data['Rating'] = line.split(': ', 1)[1]
             elif line.startswith('Delivery Time:'):
                 product_data['Delivery Time'] = line.split(': ', 1)[1]
-            elif line.startswith('Specifications:'):
-                current_key = 'Specifications'
-            elif current_key == 'Specifications' and line.startswith('  - '):
-                key, value = map(str.strip, line.lstrip('  - ').split(':', 1))
-                specifications[key] = value
-        
-        product_data['Specifications'] = specifications
         return product_data
 
 # Load Amazon and Flipkart product data from files

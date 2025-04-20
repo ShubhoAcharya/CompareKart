@@ -78,71 +78,86 @@ document.addEventListener("DOMContentLoaded", function () {
     // Submit URL for comparison
     submitUrlBtn.addEventListener("click", function() {
         const url = productUrlInput.value.trim();
-        console.log("Submit URL button clicked with URL:", url);
-        
+        urlError.textContent = "";
         if (!url) {
-            console.log("No URL entered");
-            alert("Please enter a URL");
+            urlError.textContent = "Please enter a URL";
             return;
         }
-        
+
         const flipkartPattern = /https?:\/\/(www\.)?flipkart\.com\/.*/;
         const amazonPattern = /https?:\/\/(www\.)?amazon\.in\/.*/;
-        
+
         if (!flipkartPattern.test(url) && !amazonPattern.test(url)) {
-            console.log("Invalid URL format:", url);
-            alert("Please enter a valid Amazon or Flipkart product URL");
+            urlError.textContent = "Please enter a valid Amazon or Flipkart product URL";
             return;
         }
-        
-        console.log("Valid URL, proceeding with comparison");
+
         compareModal.style.display = "none";
         loader.style.display = "block";
-        
+        comparisonContainer.style.display = "none";
+        resultsDiv.style.display = "none";
+        comparisonTable.style.display = "none";
+
+        // Get current product ID from URL
         const productId = new URLSearchParams(window.location.search).get('id');
-        console.log("Current product ID:", productId);
-        
-        // First fetch current product
+
+        // Fetch current product details
         fetch(`/get_product_details/${productId}`)
-            .then(res => {
-                console.log("Current product response status:", res.status);
-                if (!res.ok) throw new Error("Failed to fetch current product");
-                return res.json();
-            })
-            .then(currentProduct => {
-                console.log("Successfully fetched current product:", currentProduct);
-                
-                // Then fetch comparison product
+            .then(res => res.json())
+            .then(currentProductData => {
+                if (currentProductData.status !== "success") throw new Error("Current product not found");
+
+                // Fetch comparison product details from backend
                 return fetch('/compare_with_url', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ url: url })
                 })
-                .then(res => {
-                    console.log("Comparison product response status:", res.status);
-                    if (!res.ok) throw new Error("Failed to fetch comparison product");
-                    return res.json();
-                })
-                .then(newProduct => {
-                    console.log("Successfully fetched comparison product:", newProduct);
-                    
+                .then(res => res.json())
+                .then(compareProductData => {
                     loader.style.display = "none";
+                    if (compareProductData.status !== "success") {
+                        urlError.textContent = compareProductData.message || "Failed to fetch comparison product";
+                        return;
+                    }
+
+                    // Show side-by-side comparison
                     comparisonContainer.style.display = "flex";
-                    resultsDiv.style.display = "none";
-                    comparisonTable.style.display = "none";
-                    
                     comparisonContainer.innerHTML = `
-                        <!-- Your comparison HTML here -->
+                        <div class="comparison-table-wrapper" style="display: flex; gap: 2rem; width: 100%; justify-content: center;">
+                            <div class="comparison-card" style="flex:1; background:#fff; border-radius:10px; box-shadow:0 2px 8px #e0e7ef; padding:1.5rem;">
+                                <h3 style="text-align:center;">Current Product</h3>
+                                ${renderProductTable(currentProductData.product, "Current")}
+                            </div>
+                            <div class="comparison-card" style="flex:1; background:#fff; border-radius:10px; box-shadow:0 2px 8px #e0e7ef; padding:1.5rem;">
+                                <h3 style="text-align:center;">Pasted Product</h3>
+                                ${renderProductTable(compareProductData.product, "Pasted")}
+                            </div>
+                        </div>
                     `;
                 });
             })
             .catch(error => {
-                console.error('Error:', error);
                 loader.style.display = "none";
-                alert('Error: ' + error.message);
+                urlError.textContent = error.message || "Error occurred during comparison.";
             });
     });
 
+    // Helper to render product info as a table/card
+    function renderProductTable(product, label) {
+        if (!product) return `<p>No data found.</p>`;
+        return `
+            <div style="text-align:center;">
+                <img src="${product.imageUrl || product['imageUrl'] || product['Image URL'] || ''}" alt="Product Image" style="max-width:120px;max-height:120px;border-radius:8px;margin-bottom:10px;">
+            </div>
+            <table style="width:100%;margin:auto;">
+                <tr><td><strong>Name</strong></td><td>${product.name || product['name'] || product['Product Name'] || ''}</td></tr>
+                <tr><td><strong>Price</strong></td><td>${product.price || product['price'] || product['Price'] || ''}</td></tr>
+                <tr><td><strong>Rating</strong></td><td>${product.rating || product['rating'] || product['Rating'] || ''}</td></tr>
+                <tr><td><strong>Buy Link</strong></td><td><a href="${product.buy_link || product['buy_link'] || '#'}" target="_blank">Buy Now</a></td></tr>
+            </table>
+        `;
+    }
 
     // Check if an ID is available (e.g., passed via query param or localStorage)
     const urlParams = new URLSearchParams(window.location.search);
