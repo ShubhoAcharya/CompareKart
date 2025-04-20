@@ -464,17 +464,17 @@ document.getElementById("setPriceAlertBtn").addEventListener("click", function (
     const price = document.getElementById("alertPrice").value;
     const email = document.getElementById("alertEmail").value;
     const productId = new URLSearchParams(window.location.search).get('id');
+    const msg = document.getElementById("alertMsg");
+    const loader = document.getElementById("emailLoader");
 
-    // Email validation regex
+    msg.textContent = "";
+    loader.style.display = "block";  // Show spinner
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     
-    if (!price || !email || !productId) {
-        alert("Please fill all fields correctly.");
-        return;
-    }
-    
-    if (!emailRegex.test(email)) {
-        alert("Please enter a valid email address");
+    if (!price || !email || !productId || !emailRegex.test(email)) {
+        loader.style.display = "none";
+        alert("Please enter valid data.");
         return;
     }
 
@@ -485,15 +485,26 @@ document.getElementById("setPriceAlertBtn").addEventListener("click", function (
     })
     .then(res => res.json())
     .then(data => {
-        const msg = document.getElementById("alertMsg");
+        loader.style.display = "none";
         if (data.status === "success") {
-            msg.textContent = "✅ Price alert set successfully!";
+            if (data.warning) {
+                msg.textContent = "⚠️ Alert set, but email sending failed.";
+                msg.style.color = "#f59e0b"; // Amber color
+            } else {
+                msg.textContent = "✅ Price alert set successfully!";
+                msg.style.color = "#10b981"; // Green
+            }
         } else {
             msg.textContent = "❌ Failed to set alert. Try again.";
+            msg.style.color = "#ef4444"; // Red
         }
     })
     .catch(err => {
+        loader.style.display = "none";
+        msg.textContent = "❌ Network or server error.";
+        msg.style.color = "#ef4444"; // Red
         console.error(err);
-        alert("An error occurred while setting alert.");
     });
 });
+
+// ----------------- END OF PRICE ALERT FUNCTIONALITY -------------------
