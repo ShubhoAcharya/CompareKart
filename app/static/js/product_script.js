@@ -1,12 +1,12 @@
 document.addEventListener("DOMContentLoaded", function () {
-    // DOM Elements
+    // DOM Elements - Updated to include search elements
     const elements = {
         productDetails: document.getElementById("productDetails"),
         productLoader: document.getElementById("productLoader"),
         graphLoader: document.getElementById("graphLoader"),
         chartContainer: document.getElementById("chart-container"),
-        priceAlertBtn: document.getElementById("setPriceAlertBtn"),
-        alertMsg: document.getElementById("alertMsg"),
+        priceAlertBtn: document.getElementById("setPriceAlertButton"),
+        alertMsg: document.getElementById("priceAlertMessage"),
         emailLoader: document.getElementById("emailLoader"),
         buyNowBtn: document.getElementById("buyNowBtn"),
         compareButton: document.getElementById("compareButton"),
@@ -19,6 +19,10 @@ document.addEventListener("DOMContentLoaded", function () {
         submitUrlBtn: document.getElementById("submitUrlBtn"),
         urlError: document.getElementById("urlError"),
         closeModal: document.querySelector(".close"),
+        searchButton: document.getElementById("searchButton"),
+        searchQueryInput: document.getElementById("searchQuery"),
+        searchResults: document.getElementById("results"),
+        loader: document.getElementById("loader"),
         comparisonContainer: (() => {
             const container = document.createElement("div");
             container.className = "comparison-container";
@@ -36,6 +40,68 @@ document.addEventListener("DOMContentLoaded", function () {
     } else {
         showProductError("No product ID found in URL");
     }
+
+    // Search functionality
+    function handleSearch() {
+        const searchQuery = elements.searchQueryInput.value.trim();
+        if (!searchQuery) {
+            showSearchError("Please enter a search term");
+            return;
+        }
+
+        showLoading(elements.loader, "Searching products...");
+        
+        fetch('/search', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ query: searchQuery }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading(elements.loader);
+            if (data.status === 'success') {
+                // Redirect to product display page with the found product
+                window.location.href = data.redirect;
+            } else if (data.status === 'not_found') {
+                showSearchError(data.message || "No matching products found");
+            } else {
+                throw new Error(data.message || 'Search failed');
+            }
+        })
+        .catch((error) => {
+            hideLoading(elements.loader);
+            console.error('Error:', error);
+            showSearchError(error.message || "Error occurred during search");
+        });
+    }
+
+    function showSearchError(message) {
+        elements.searchResults.innerHTML = `
+            <div class="error-message">
+                <i class="fas fa-exclamation-circle"></i>
+                <p>${message}</p>
+            </div>
+        `;
+        elements.searchResults.style.display = 'block';
+    }
+
+    // Event listeners for search
+    elements.searchButton.addEventListener("click", handleSearch);
+    elements.searchQueryInput.addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+            handleSearch();
+        }
+    });
+
+    // Close search results when clicking outside
+    document.addEventListener('click', function(event) {
+        if (!event.target.closest('.search-container') && 
+            !event.target.closest('#results')) {
+            elements.searchResults.style.display = 'none';
+        }
+    });
 
     // Main product loading function
     async function loadProductDetails(productId) {
