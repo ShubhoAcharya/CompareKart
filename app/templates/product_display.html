@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Product Display - Comparekart</title>
+    <title>Product Display - CompareKart</title>
     <link rel="icon" type="image/x-icon" href="../static/images/cart_4628369.png">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/product_styles.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -21,12 +21,30 @@
             0% { transform: rotate(0deg);}
             100% { transform: rotate(360deg);}
         }
+        .graph-loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            flex-direction: column;
+            color: #4f46e5;
+        }
+        .graph-loading .spinner {
+            margin-bottom: 15px;
+        }
+        .graph-error {
+            text-align: center;
+            padding: 20px;
+            color: #d32f2f;
+            background: #ffebee;
+            border-radius: 8px;
+        }
     </style>
 </head>
 <body>
     <header>
         <div class="logo-container">
-            <img src="../static/images/logo comparekart.jpg" alt="Comparekart Logo" class="logo-image">
+            <img src="../static/images/logo comparekart.jpg" alt="CompareKart Logo" class="logo-image">
         </div>
         <div class="search-container">
             <input type="text" id="searchQuery" placeholder="Search for products, brands and more">
@@ -60,25 +78,14 @@
             <p>Stay ahead of the deals — track your favorite product and get notified instantly.</p>
         </div>
         
-        
         <div class="product-main-flex">
             <section class="product-info-section">
                 <div id="productDetails" class="product-card">
                     <!-- Product details will be dynamically loaded here -->
-                    <!-- Example: -->
-                    <!--
-                    <img src="..." class="product-image" alt="Product">
-                    <div class="product-name">Product Name</div>
-                    <div class="product-price">₹1234</div>
-                    <div class="product-rating">4.5 ★</div>
-                    <div class="star-rating">
-                        <span class="star">&#9733;</span>
-                        <span class="star">&#9733;</span>
-                        <span class="star">&#9733;</span>
-                        <span class="star">&#9733;</span>
-                        <span class="star empty">&#9733;</span>
+                    <div id="productLoader" class="graph-loading" style="display: none;">
+                        <div class="spinner"></div>
+                        <p>Loading product details...</p>
                     </div>
-                    -->
                 </div>
                 <button class="buy-now-btn" id="buyNowBtn">Buy Now</button>
                 <button id="compareButton" class="compare-button">Compare</button>
@@ -89,49 +96,58 @@
                     <p id="lowest-price" class="price-label lowest-price"></p>
                     <p id="average-price" class="price-label average-price"></p>
                 </div>
-                <div id="chart-container"></div>
-                <div class="price-alert-form">
-                    <h3>Set Price Alert</h3>
-                    <input type="number" id="alertPrice" placeholder="Your desired price" required>
-                    <input type="email" id="alertEmail" placeholder="Your email" required>
-                    <button id="setPriceAlertBtn">Set Alert</button>
-                    <p id="alertMsg" class="alert-message"></p>
-                    <div id="emailLoader" style="display: none; margin-top: 10px;">
+                <div id="chart-container">
+                    <div id="graphLoader" class="graph-loading">
                         <div class="spinner"></div>
-                    </div>                    
+                        <p>Loading price history...</p>
+                    </div>
                 </div>
-                
+                <!-- Modern Price Alert Section -->
+                    <div class="price-alert-form">
+                        <h3>🔔 Set a Price Alert</h3>
+                        <input type="number" id="desiredPrice" placeholder="Desired Price " required>
+                        <input type="email" id="alertEmail" placeholder="Your Email Address" required>
+                        <button id="setPriceAlertButton">Set Alert</button>
+
+                        <div id="priceAlertMessage" class="alert-message" style="display:none;"></div>
+
+                        <div id="emailLoader" style="display:none;">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
             </section>
         </div>
     </main>
-    <!-- Add this modal at the bottom of product_display.html, just before the closing </body> tag -->
-<div id="compareModal" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <h3>Compare Options</h3>
-        <div class="compare-options">
-            <button id="similarProductsBtn" class="compare-option-btn">
-                <i class="fas fa-search"></i> Find Similar Products
-            </button>
-            <button id="pasteUrlBtn" class="compare-option-btn">
-                <i class="fas fa-paste"></i> Paste Product URL
-            </button>
-        </div>
-        <div id="urlInputContainer" style="display: none;">
-            <input type="text" id="productUrlInput" placeholder="Paste Amazon or Flipkart product URL">
-            <button id="submitUrlBtn">Compare</button>
-            <p id="urlError" class="error-message"></p>
+
+    <!-- Compare Modal -->
+    <div id="compareModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Compare Options</h3>
+            <div class="compare-options">
+                <button id="similarProductsBtn" class="compare-option-btn">
+                    <i class="fas fa-search"></i> Find Similar Products
+                </button>
+                <button id="pasteUrlBtn" class="compare-option-btn">
+                    <i class="fas fa-paste"></i> Paste Product URL
+                </button>
+            </div>
+            <div id="urlInputContainer" style="display: none;">
+                <input type="text" id="productUrlInput" placeholder="Paste Amazon or Flipkart product URL">
+                <button id="submitUrlBtn">Compare</button>
+                <p id="urlError" class="error-message"></p>
+            </div>
         </div>
     </div>
-</div>
 
+    <!-- Full page loader -->
     <div id="loader" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(255,255,255,0.7);z-index:9999;justify-content:center;align-items:center;">
         <div class="spinner"></div>
     </div>
 
     <footer>
         <div class="footer-content">
-            <p>&copy; <span id="currentYear"></span> Comparekart. All rights reserved.</p>
+            <p>&copy; <span id="currentYear"></span> CompareKart. All rights reserved.</p>
             <div class="footer-links">
                 <a href="{{ url_for('main.privacy') }}">Privacy Policy</a>
                 <a href="{{ url_for('main.terms') }}">Terms of Service</a>
@@ -147,7 +163,14 @@
     <script src="{{ url_for('static', filename='js/product_script.js') }}"></script>
     <script>
         document.getElementById('currentYear').textContent = new Date().getFullYear();
+        
+        // Show loading states when page loads
+        document.addEventListener("DOMContentLoaded", function() {
+            const productId = new URLSearchParams(window.location.search).get('id');
+            if (productId) {
+                document.getElementById('productLoader').style.display = 'flex';
+            }
+        });
     </script>
-    
 </body>
 </html>

@@ -7,12 +7,14 @@ import os
 DATABASE_URL = "postgresql://postgres:root@localhost:5432/CompareKart"
 engine = create_engine(DATABASE_URL)
 
-def send_email_alert(to_email, product_name, current_price, desired_price):
+def send_email_alert(to_email, product_name, current_price, desired_price, alert_id, host_url):
     subject = f"📉 Price Drop Alert: {product_name}"
     body = f"""
     Good news! The price of "{product_name}" has dropped to ₹{current_price}, which is below your alert threshold of ₹{desired_price}!
 
-    Visit CompareKart to view the deal now: https://comparekart.com/product_display?id=123
+    Visit CompareKart to view the deal now: {host_url}product_display?id=123
+
+    To remove this alert: {host_url}remove_price_alert/{alert_id}
 
     - Your CompareKart Team
     """
@@ -34,25 +36,29 @@ def send_email_alert(to_email, product_name, current_price, desired_price):
 def check_price_alerts():
     with engine.connect() as conn:
         results = conn.execute(text("""
-            SELECT p.id, p.name, p.price, a.email, a.desired_price
+            SELECT a.id, p.name, p.price, a.email, a.desired_price
             FROM price_alerts a
             JOIN products p ON p.id = a.product_id
             WHERE p.price <= a.desired_price
         """)).fetchall()
 
         for row in results:
-            send_email_alert(row.email, row.name, row.price, row.desired_price)
+            send_email_alert(
+                row.email, 
+                row.name, 
+                row.price, 
+                row.desired_price,
+                row.id,
+                "https://comparekart.com"  # Replace with your actual host URL
+            )
 
-        # Optional: delete alerts that were triggered
+        # Delete alerts that were triggered
         conn.execute(text("""
             DELETE FROM price_alerts
-            WHERE product_id IN (
-                SELECT p.id
-                FROM products p
-                JOIN price_alerts a ON a.product_id = p.id
+            WHERE id IN (
+                SELECT a.id
+                FROM price_alerts a
+                JOIN products p ON a.product_id = p.id
                 WHERE p.price <= a.desired_price
             )
         """))
-
-if __name__ == "__main__":
-    check_price_alerts()

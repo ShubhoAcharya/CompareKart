@@ -1,184 +1,128 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const productDetailsDiv = document.getElementById("productDetails");
-    const compareButton = document.getElementById("compareButton");
-    const loader = document.getElementById("loader");
-    const resultsDiv = document.getElementById("results");
-    const comparisonTable = document.getElementById("comparisonTable");
+    // DOM Elements
+    const elements = {
+        productDetails: document.getElementById("productDetails"),
+        productLoader: document.getElementById("productLoader"),
+        graphLoader: document.getElementById("graphLoader"),
+        chartContainer: document.getElementById("chart-container"),
+        priceAlertBtn: document.getElementById("setPriceAlertBtn"),
+        alertMsg: document.getElementById("alertMsg"),
+        emailLoader: document.getElementById("emailLoader"),
+        buyNowBtn: document.getElementById("buyNowBtn"),
+        compareButton: document.getElementById("compareButton"),
+        scrollToTop: document.getElementById("scrollToTop"),
+        compareModal: document.getElementById("compareModal"),
+        similarProductsBtn: document.getElementById("similarProductsBtn"),
+        pasteUrlBtn: document.getElementById("pasteUrlBtn"),
+        urlInputContainer: document.getElementById("urlInputContainer"),
+        productUrlInput: document.getElementById("productUrlInput"),
+        submitUrlBtn: document.getElementById("submitUrlBtn"),
+        urlError: document.getElementById("urlError"),
+        closeModal: document.querySelector(".close"),
+        comparisonContainer: (() => {
+            const container = document.createElement("div");
+            container.className = "comparison-container";
+            container.style.display = "none";
+            document.querySelector("main").appendChild(container);
+            return container;
+        })()
+    };
 
-    const compareModal = document.getElementById("compareModal");
-    const similarProductsBtn = document.getElementById("similarProductsBtn");
-    const pasteUrlBtn = document.getElementById("pasteUrlBtn");
-    const urlInputContainer = document.getElementById("urlInputContainer");
-    const productUrlInput = document.getElementById("productUrlInput");
-    const submitUrlBtn = document.getElementById("submitUrlBtn");
-    const urlError = document.getElementById("urlError");
-    const closeModal = document.querySelector(".close");
-    const comparisonContainer = document.createElement("div");
-    comparisonContainer.className = "comparison-container";
-    comparisonContainer.style.display = "none";
-    document.querySelector("main").appendChild(comparisonContainer);
+    // Get product ID from URL
+    const productId = new URLSearchParams(window.location.search).get('id');
+    
+    if (productId) {
+        loadProductDetails(productId);
+    } else {
+        showProductError("No product ID found in URL");
+    }
 
-    // Replace the existing compareButton event listener with this:
-    compareButton.addEventListener("click", function() {
-        compareModal.style.display = "block";
-    });
-
-    // Close modal when clicking X
-    closeModal.addEventListener("click", function() {
-        compareModal.style.display = "none";
-    });
-
-    // Close modal when clicking outside
-    window.addEventListener("click", function(event) {
-        if (event.target === compareModal) {
-            compareModal.style.display = "none";
+    // Main product loading function
+    async function loadProductDetails(productId) {
+        try {
+            showLoading(elements.productLoader, "Loading product details...");
+            
+            const response = await fetch(`/get_product_details/${productId}`);
+            const data = await response.json();
+            
+            if (data.status === "success") {
+                renderProduct(data.product);
+                if (data.modified_url) {
+                    loadGraphData(productId, data.modified_url);
+                }
+            } else {
+                showProductError("Product not found");
+            }
+        } catch (error) {
+            console.error('Error loading product:', error);
+            showProductError("Error loading product details");
+        } finally {
+            hideLoading(elements.productLoader);
         }
-    });
+    }
 
-    // Similar products button
-    similarProductsBtn.addEventListener("click", function() {
-        compareModal.style.display = "none";
-        // Show loader
-        loader.style.display = "block";
-        
-        // Existing comparison logic
-        setTimeout(function() {
-            fetch('/compare')
-                .then(response => response.json())
-                .then(data => {
-                    loader.style.display = "none";
-                    comparisonContainer.style.display = "none"; // Hide our custom container
-                    resultsDiv.style.display = "block";
-                    comparisonTable.style.display = "block";
-                    comparisonTable.innerHTML = generateTable(data);
-                    
-                    resultsDiv.innerHTML = `
-                        <div class="link-container">
-                            <a href="${data.product_urls.amazon_link}" class="styled-link amazon-link" target="_blank">
-                                <i class="fas fa-shopping-cart"></i> Amazon: Go to Amazon
-                            </a>
-                            <a href="${data.product_urls.flipkart_link}" class="styled-link flipkart-link" target="_blank">
-                                <i class="fas fa-shopping-cart"></i> Flipkart: Go to Flipkart
-                            </a>
-                        </div>
-                    `;
-                })
-                .catch((error) => {
-                    console.error('Error:', error);
-                    loader.style.display = "none";
-                });
-        }, 1500);
-    });
-
-    // Paste URL button
-    pasteUrlBtn.addEventListener("click", function() {
-        urlInputContainer.style.display = "block";
-    });
-
-    // Submit URL for comparison
-    submitUrlBtn.addEventListener("click", function() {
-        const url = productUrlInput.value.trim();
-        urlError.textContent = "";
-        if (!url) {
-            urlError.textContent = "Please enter a URL";
-            return;
+    // Graph data loading
+    async function loadGraphData(productId, modifiedUrl) {
+        try {
+            showLoading(elements.graphLoader, "Loading price history...");
+            
+            const response = await fetch(`/get_graph_data?product_id=${productId}&modified_url=${encodeURIComponent(modifiedUrl)}`);
+            const data = await response.json();
+            
+            if (data.status === "success") {
+                renderGraph(data.graph_data);
+            } else {
+                showGraphError("Failed to load price history", productId, modifiedUrl);
+            }
+        } catch (error) {
+            console.error('Error loading graph:', error);
+            showGraphError("Error loading price history", productId, modifiedUrl);
         }
+    }
 
-        const flipkartPattern = /https?:\/\/(www\.)?flipkart\.com\/.*/;
-        const amazonPattern = /https?:\/\/(www\.)?amazon\.in\/.*/;
-
-        if (!flipkartPattern.test(url) && !amazonPattern.test(url)) {
-            urlError.textContent = "Please enter a valid Amazon or Flipkart product URL";
-            return;
-        }
-
-        compareModal.style.display = "none";
-        loader.style.display = "block";
-        comparisonContainer.style.display = "none";
-        resultsDiv.style.display = "none";
-        comparisonTable.style.display = "none";
-
-        // Get current product ID from URL
-        const productId = new URLSearchParams(window.location.search).get('id');
-
-        // Fetch current product details
-        fetch(`/get_product_details/${productId}`)
-            .then(res => res.json())
-            .then(currentProductData => {
-                if (currentProductData.status !== "success") throw new Error("Current product not found");
-
-                // Fetch comparison product details from backend
-                return fetch('/compare_with_url', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url: url })
-                })
-                .then(res => res.json())
-                .then(compareProductData => {
-                    loader.style.display = "none";
-                    if (compareProductData.status !== "success") {
-                        urlError.textContent = compareProductData.message || "Failed to fetch comparison product";
-                        return;
-                    }
-
-                    // Show side-by-side comparison
-                    comparisonContainer.style.display = "flex";
-                    comparisonContainer.innerHTML = `
-                        <div class="comparison-table-wrapper" style="display: flex; gap: 2rem; width: 100%; justify-content: center;">
-                            <div class="comparison-card" style="flex:1; background:#fff; border-radius:10px; box-shadow:0 2px 8px #e0e7ef; padding:1.5rem;">
-                                <h3 style="text-align:center;">Current Product</h3>
-                                ${renderProductTable(currentProductData.product, "Current")}
-                            </div>
-                            <div class="comparison-card" style="flex:1; background:#fff; border-radius:10px; box-shadow:0 2px 8px #e0e7ef; padding:1.5rem;">
-                                <h3 style="text-align:center;">Pasted Product</h3>
-                                ${renderProductTable(compareProductData.product, "Pasted")}
-                            </div>
-                        </div>
-                    `;
-                });
-            })
-            .catch(error => {
-                loader.style.display = "none";
-                urlError.textContent = error.message || "Error occurred during comparison.";
-            });
-    });
-
-    // Helper to render product info as a table/card
-    function renderProductTable(product, label) {
-        if (!product) return `<p>No data found.</p>`;
-        return `
-            <div style="text-align:center;">
-                <img src="${product.imageUrl || product['imageUrl'] || product['Image URL'] || ''}" alt="Product Image" style="max-width:120px;max-height:120px;border-radius:8px;margin-bottom:10px;">
-            </div>
-            <table style="width:100%;margin:auto;">
-                <tr><td><strong>Name</strong></td><td>${product.name || product['name'] || product['Product Name'] || ''}</td></tr>
-                <tr><td><strong>Price</strong></td><td>${product.price || product['price'] || product['Price'] || ''}</td></tr>
-                <tr><td><strong>Rating</strong></td><td>${product.rating || product['rating'] || product['Rating'] || ''}</td></tr>
-                <tr><td><strong>Buy Link</strong></td><td><a href="${product.buy_link || product['buy_link'] || '#'}" target="_blank">Buy Now</a></td></tr>
-            </table>
+    // UI Helper Functions
+    function showLoading(element, message = "") {
+        element.style.display = 'flex';
+        element.innerHTML = `
+            <div class="spinner"></div>
+            ${message ? `<p>${message}</p>` : ''}
         `;
     }
 
-    // Check if an ID is available (e.g., passed via query param or localStorage)
-    const urlParams = new URLSearchParams(window.location.search);
-    const productId = urlParams.get('id');
-    if (productId) {
-        fetch(`/get_product_details/${productId}`)
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === "success") {
-                    renderProduct(data.product);
-                } else {
-                    productDetailsDiv.innerHTML = `<p>Product not found.</p>`;
-                }
-            });
-    } else {
-        // Fallback: Simulate fetching product details (for demo)
-        fetchProductDetails().then(renderProduct);
+    function hideLoading(element) {
+        element.style.display = 'none';
     }
 
+    function showError(element, message) {
+        element.innerHTML = `
+            <div class="error-message">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>${message}</p>
+            </div>
+        `;
+    }
+
+    function showProductError(message) {
+        showError(elements.productDetails, message);
+    }
+
+    function showGraphError(message, productId, modifiedUrl) {
+        elements.graphLoader.innerHTML = `
+            <div class="graph-error">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>${message}</p>
+                <button id="retryGraphBtn" class="btn-retry">Try Again</button>
+            </div>
+        `;
+        
+        document.getElementById('retryGraphBtn').onclick = () => {
+            loadGraphData(productId, modifiedUrl);
+        };
+    }
+
+    // Product Rendering
     function renderProduct(product) {
-        productDetailsDiv.innerHTML = `
+        elements.productDetails.innerHTML = `
             <div class="product-card">
                 <img src="${product.imageUrl}" alt="${product.name}" class="product-image">
                 <h3 class="product-name">${product.name}</h3>
@@ -187,339 +131,344 @@ document.addEventListener("DOMContentLoaded", function () {
                 ${renderStars(product.rating)}
             </div>
         `;
-        document.getElementById('buyNowBtn').onclick = function() {
-            window.open(product.buy_link, '_blank');
-        };
+        
+        elements.buyNowBtn.onclick = () => window.open(product.buy_link, '_blank');
     }
 
     function renderStars(rating) {
         const maxStars = 5;
         let html = '';
+        const numericRating = parseFloat(rating) || 0;
+        
         for (let i = 1; i <= maxStars; i++) {
-            html += `<span class="star${i <= Math.round(rating) ? '' : ' empty'}">&#9733;</span>`;
+            html += `<span class="star${i <= Math.round(numericRating) ? '' : ' empty'}">&#9733;</span>`;
         }
         return `<div class="star-rating">${html}</div>`;
     }
 
-    // Scroll to top functionality
-    const scrollToTopButton = document.getElementById("scrollToTop");
+    // Graph Rendering
+    function renderGraph(graphData) {
+        hideLoading(elements.graphLoader);
+        
+        // Update price summary
+        document.getElementById("lowest-price").textContent = `Lowest Price: ₹${graphData.lowest_price.toLocaleString('en-IN')}`;
+        document.getElementById("average-price").textContent = `Average Price: ₹${graphData.average_price.toLocaleString('en-IN')}`;
 
-    window.addEventListener("scroll", function () {
-        if (window.scrollY > 300) {
-            scrollToTopButton.classList.add("show");
-        } else {
-            scrollToTopButton.classList.remove("show");
-        }
-    });
+        // Process graph data
+        const points = parsePathData(graphData.path_data);
+        const dates = generateDates(points.length);
+        const seriesData = points.map((point, i) => ({
+            x: dates[i].getTime(),
+            y: svgYToPrice(point.y, graphData),
+            price: `₹${svgYToPrice(point.y, graphData).toLocaleString('en-IN')}`
+        }));
 
-    scrollToTopButton.addEventListener("click", function () {
-        window.scrollTo({
-            top: 0,
-            behavior: "smooth",
+        // Create chart
+        Highcharts.chart('chart-container', {
+            chart: { type: 'areaspline', backgroundColor: 'transparent' },
+            title: { text: graphData.title || 'Price History' },
+            subtitle: { text: graphData.subtitle || 'Historical price trends' },
+            xAxis: {
+                type: 'datetime',
+                labels: { format: '{value:%b %d}' }
+            },
+            yAxis: {
+                title: { text: 'Price (₹)' },
+                labels: { formatter: function() { return `₹${this.value.toLocaleString('en-IN')}`; } }
+            },
+            tooltip: {
+                formatter: function() {
+                    return `<b>${Highcharts.dateFormat('%b %d, %Y', this.x)}</b><br/>Price: ${this.point.price}`;
+                }
+            },
+            series: [{
+                name: 'Price',
+                data: seriesData,
+                color: '#4f46e5'
+            }],
+            credits: { enabled: false }
         });
-    });
-
-});
-
-// ----------------- PRICE HISTORY GRAPH -------------------
-// Fetch graph data from JSON
-        fetch('graph_data.json')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(graphData => {
-                // Show lowest and average price on the page
-                document.getElementById("lowest-price").textContent = `Lowest Price: ₹${graphData.lowest_price.toLocaleString('en-IN')}`;
-                document.getElementById("average-price").textContent = `Average Price: ₹${graphData.average_price.toLocaleString('en-IN')}`;
-
-                // Parse SVG path data to extract coordinates
-                function parsePathData(pathData) {
-                    const commands = pathData.split(/\s+/);
-                    const points = [];
-                    let i = 0;
-
-                    while (i < commands.length) {
-                        const cmd = commands[i];
-                        if (cmd === 'M' || cmd === 'C') {
-                            i++;
-                            while (i < commands.length && !isNaN(parseFloat(commands[i]))) {
-                                const x = parseFloat(commands[i]);
-                                i++;
-                                const y = parseFloat(commands[i]);
-                                i++;
-                                points.push({ x, y });
-                            }
-                        } else {
-                            i++;
-                        }
-                    }
-                    return points;
-                }
-
-                // Convert SVG Y-coordinates to prices with proper scaling
-                function svgYToPrice(y) {
-                    // Get min and max prices from the y_axis_labels
-                    const minPrice = parseFloat(graphData.y_axis_labels[0].replace('₹', '').replace(',', ''));
-                    const maxPrice = parseFloat(graphData.y_axis_labels[graphData.y_axis_labels.length - 1].replace('₹', '').replace(',', ''));
-                    
-                    // SVG coordinate range (from the path data)
-                    const svgMinY = 0;
-                    const svgMaxY = 150; // Approximate max from the path data
-                    
-                    // Calculate price based on SVG y position (inverted because SVG y increases downward)
-                    const price = maxPrice - ((y - svgMinY) / (svgMaxY - svgMinY)) * (maxPrice - minPrice);
-                    return Math.max(minPrice, Math.min(maxPrice, price)); // Clamp to min/max
-                }
-
-                // Generate dates for X-axis (4 months period ending today)
-                function generateDates(count) {
-                    const endDate = new Date(); // Today's date
-                    const startDate = new Date(endDate);
-                    startDate.setMonth(endDate.getMonth() - 4); // Go back 4 months
-                    
-                    const dates = [];
-                    const timeDiff = endDate.getTime() - startDate.getTime();
-                    const dayDiff = timeDiff / (1000 * 3600 * 24);
-                    const interval = dayDiff / (count - 1);
-                    
-                    for (let i = 0; i < count; i++) {
-                        const date = new Date(startDate);
-                        date.setDate(startDate.getDate() + (i * interval));
-                        dates.push(date);
-                    }
-                    
-                    return dates;
-                }
-
-                const points = parsePathData(graphData.path_data);
-                
-                // Generate dates for 4 months period
-                const dates = generateDates(points.length);
-
-                // Build chart series data
-                const seriesData = points.map((point, i) => {
-                    const price = svgYToPrice(point.y);
-                    return {
-                        x: dates[i].getTime(),
-                        y: price,
-                        price: `₹${price.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`
-                    };
-                });
-
-                // Get min and max prices from y_axis_labels
-                const minPrice = parseFloat(graphData.y_axis_labels[0].replace('₹', '').replace(',', ''));
-                const maxPrice = parseFloat(graphData.y_axis_labels[graphData.y_axis_labels.length - 1].replace('₹', '').replace(',', ''));
-
-                // Calculate tick interval
-                const priceRange = maxPrice - minPrice;
-                const tickInterval = priceRange <= 20000 ? 5000 : 
-                                   priceRange <= 50000 ? 10000 : 
-                                   20000;
-
-                // Render Highcharts
-                Highcharts.chart('chart-container', {
-                    chart: {
-                        type: 'areaspline',
-                        backgroundColor: 'transparent'
-                    },
-                    title: {
-                        text: graphData.title || '4-Month Price History',
-                        style: {
-                            color: '#333',
-                            fontSize: '1.2em',
-                            fontWeight: 'bold'
-                        }
-                    },
-                    subtitle: {
-                        text: graphData.subtitle || `Price trend from ${dates[0].toLocaleDateString()} to ${dates[dates.length-1].toLocaleDateString()}`,
-                        style: {
-                            color: '#666',
-                            fontSize: '0.8em'
-                        }
-                    },
-                    xAxis: {
-                        type: 'datetime',
-                        title: {
-                            text: 'Date'
-                        },
-                        labels: {
-                            format: '{value:%b %d}',
-                            rotation: -45
-                        },
-                        gridLineWidth: 1,
-                        gridLineColor: '#e6e6e6',
-                        min: dates[0].getTime(),
-                        max: dates[dates.length-1].getTime()
-                    },
-                    yAxis: {
-                        title: {
-                            text: 'Price (₹)'
-                        },
-                        labels: {
-                            formatter: function() {
-                                return `₹${this.value.toLocaleString('en-IN')}`;
-                            }
-                        },
-                        min: minPrice,
-                        max: maxPrice,
-                        tickInterval: tickInterval,
-                        gridLineWidth: 1,
-                        gridLineColor: '#e6e6e6'
-                    },
-                    tooltip: {
-                        formatter: function() {
-                            return `<b>${Highcharts.dateFormat('%A %b %d, %Y', this.x)}</b><br/>Price: ${this.point.price}`;
-                        }
-                    },
-                    plotOptions: {
-                        areaspline: {
-                            fillOpacity: 0.2,
-                            marker: {
-                                enabled: true,
-                                radius: 3,
-                                states: {
-                                    hover: {
-                                        radius: 5
-                                    }
-                                }
-                            },
-                            lineWidth: 3,
-                            states: {
-                                hover: {
-                                    lineWidth: 4
-                                }
-                            }
-                        }
-                    },
-                    series: [{
-                        name: 'Price',
-                        data: seriesData,
-                        color: '#1e88e5',
-                        fillColor: {
-                            linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
-                            stops: [
-                                [0, 'rgba(30, 136, 229, 0.3)'],
-                                [1, 'rgba(30, 136, 229, 0.05)']
-                            ]
-                        }
-                    }],
-                    annotations: [{
-                        labels: [{
-                            point: {
-                                x: dates[0].getTime(),
-                                y: graphData.lowest_price,
-                                xAxis: 0,
-                                yAxis: 0
-                            },
-                            text: `Lowest: ₹${graphData.lowest_price.toLocaleString('en-IN')}`,
-                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                            borderColor: '#d32f2f',
-                            borderRadius: 4,
-                            style: {
-                                color: '#d32f2f',
-                                fontWeight: 'bold'
-                            },
-                            padding: 8
-                        }, {
-                            point: {
-                                x: dates[Math.floor(dates.length / 2)].getTime(),
-                                y: graphData.average_price,
-                                xAxis: 0,
-                                yAxis: 0
-                            },
-                            text: `Avg: ₹${graphData.average_price.toLocaleString('en-IN')}`,
-                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                            borderColor: '#1976d2',
-                            borderRadius: 4,
-                            style: {
-                                color: '#1976d2',
-                                fontWeight: 'bold'
-                            },
-                            padding: 8
-                        }]
-                    }],
-                    credits: {
-                        enabled: false
-                    },
-                    responsive: {
-                        rules: [{
-                            condition: {
-                                maxWidth: 600
-                            },
-                            chartOptions: {
-                                xAxis: {
-                                    labels: {
-                                        rotation: -30
-                                    }
-                                },
-                                annotations: {
-                                    labels: [{
-                                        style: {
-                                            fontSize: '10px'
-                                        }
-                                    }]
-                                }
-                            }
-                        }]
-                    }
-                });
-            })
-            .catch(error => {
-                console.error('Error fetching graph data:', error);
-                alert('Failed to load graph data. Please try again later.');
-            });
-// ----------------- END OF PRICE HISTORY GRAPH -------------------
-
-// ----------------- PRICE ALERT FUNCTIONALITY -------------------
-
-document.getElementById("setPriceAlertBtn").addEventListener("click", function () {
-    const price = document.getElementById("alertPrice").value;
-    const email = document.getElementById("alertEmail").value;
-    const productId = new URLSearchParams(window.location.search).get('id');
-    const msg = document.getElementById("alertMsg");
-    const loader = document.getElementById("emailLoader");
-
-    msg.textContent = "";
-    loader.style.display = "block";  // Show spinner
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    
-    if (!price || !email || !productId || !emailRegex.test(email)) {
-        loader.style.display = "none";
-        alert("Please enter valid data.");
-        return;
     }
 
-    fetch('/set_price_alert', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ product_id: productId, desired_price: price, email: email })
-    })
-    .then(res => res.json())
-    .then(data => {
-        loader.style.display = "none";
-        if (data.status === "success") {
-            if (data.warning) {
-                msg.textContent = "⚠️ Alert set, but email sending failed.";
-                msg.style.color = "#f59e0b"; // Amber color
+    // Graph Data Processing Helpers
+    function parsePathData(pathData) {
+        const commands = pathData.split(/\s+/);
+        const points = [];
+        let i = 0;
+
+        while (i < commands.length) {
+            const cmd = commands[i];
+            if (cmd === 'M' || cmd === 'C') {
+                i++;
+                while (i < commands.length && !isNaN(parseFloat(commands[i]))) {
+                    points.push({
+                        x: parseFloat(commands[i++]),
+                        y: parseFloat(commands[i++])
+                    });
+                }
             } else {
-                msg.textContent = "✅ Price alert set successfully!";
-                msg.style.color = "#10b981"; // Green
+                i++;
             }
-        } else {
-            msg.textContent = "❌ Failed to set alert. Try again.";
-            msg.style.color = "#ef4444"; // Red
         }
-    })
-    .catch(err => {
-        loader.style.display = "none";
-        msg.textContent = "❌ Network or server error.";
-        msg.style.color = "#ef4444"; // Red
-        console.error(err);
+        return points;
+    }
+
+    function svgYToPrice(y, graphData) {
+        const minPrice = parseFloat(graphData.y_axis_labels[0].replace('₹', '').replace(',', ''));
+        const maxPrice = parseFloat(graphData.y_axis_labels[graphData.y_axis_labels.length - 1].replace('₹', '').replace(',', ''));
+        const svgMinY = 0;
+        const svgMaxY = 150;
+        const price = maxPrice - ((y - svgMinY) / (svgMaxY - svgMinY)) * (maxPrice - minPrice);
+        return Math.max(minPrice, Math.min(maxPrice, price));
+    }
+
+    function generateDates(count) {
+        const endDate = new Date();
+        const startDate = new Date(endDate);
+        startDate.setMonth(endDate.getMonth() - 4);
+        
+        const dates = [];
+        const timeDiff = endDate.getTime() - startDate.getTime();
+        const dayDiff = timeDiff / (1000 * 3600 * 24);
+        const interval = dayDiff / (count - 1);
+        
+        for (let i = 0; i < count; i++) {
+            const date = new Date(startDate);
+            date.setDate(startDate.getDate() + (i * interval));
+            dates.push(date);
+        }
+        
+        return dates;
+    }
+
+    // Price Alert Functionality - Consolidated Version
+    elements.priceAlertBtn.addEventListener("click", async function() {
+        const price = document.getElementById("alertPrice").value;
+        const email = document.getElementById("alertEmail").value;
+        const msg = document.getElementById("alertMsg");
+        const emailLoader = document.getElementById("emailLoader");
+    
+        // Clear previous messages and styles
+        msg.textContent = "";
+        msg.className = "alert-message";
+        
+        // Validate inputs
+        if (!price || !email || !productId) {
+            showAlertMessage("Please fill all fields", "error");
+            return;
+        }
+    
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            showAlertMessage("Please enter a valid email", "error");
+            return;
+        }
+    
+        try {
+            // Show loading state
+            emailLoader.style.display = "block";
+            elements.priceAlertBtn.disabled = true;
+            
+            const response = await fetch('/set_price_alert', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    product_id: productId, 
+                    desired_price: parseFloat(price), 
+                    email: email 
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.status === "success") {
+                if (data.warning) {
+                    showAlertMessage(`Alert #${data.alert_id} set successfully! (Email notification failed)`, "warning");
+                } else {
+                    showAlertMessage(`Price alert #${data.alert_id} set successfully! You'll be notified when the price drops.`, "success");
+                    // Clear the form on success
+                    document.getElementById("alertPrice").value = "";
+                    document.getElementById("alertEmail").value = "";
+                }
+            } else {
+                showAlertMessage(data.message || "Failed to set alert. Please try again.", "error");
+            }
+        } catch (error) {
+            console.error('Error setting alert:', error);
+            showAlertMessage("Network error. Please try again.", "error");
+        } finally {
+            // Reset loading state
+            emailLoader.style.display = "none";
+            elements.priceAlertBtn.disabled = false;
+        }
+    });
+
+    function showAlertMessage(message, type) {
+        const msg = document.getElementById("alertMsg");
+        msg.textContent = message;
+        msg.className = `alert-message ${type}`;
+        
+        // Auto-hide success messages after 5 seconds
+        if (type === "success") {
+            setTimeout(() => {
+                msg.textContent = "";
+                msg.className = "alert-message";
+            }, 5000);
+        }
+    }
+
+    // Comparison Functionality
+    elements.compareButton.addEventListener("click", function() {
+        elements.compareModal.style.display = "block";
+    });
+
+    elements.closeModal.addEventListener("click", function() {
+        elements.compareModal.style.display = "none";
+    });
+
+    window.addEventListener("click", function(event) {
+        if (event.target === elements.compareModal) {
+            elements.compareModal.style.display = "none";
+        }
+    });
+
+    elements.similarProductsBtn.addEventListener("click", function() {
+        elements.compareModal.style.display = "none";
+        showLoading(loader);
+        
+        fetch('/compare')
+            .then(response => response.json())
+            .then(data => {
+                hideLoading(loader);
+                renderComparisonResults(data);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                hideLoading(loader);
+            });
+    });
+
+    elements.pasteUrlBtn.addEventListener("click", function() {
+        elements.urlInputContainer.style.display = "block";
+    });
+
+    elements.submitUrlBtn.addEventListener("click", function() {
+        const url = elements.productUrlInput.value.trim();
+        elements.urlError.textContent = "";
+        
+        if (!url) {
+            elements.urlError.textContent = "Please enter a URL";
+            return;
+        }
+
+        if (!/https?:\/\/(www\.)?(flipkart\.com|amazon\.in)\/.*/.test(url)) {
+            elements.urlError.textContent = "Please enter a valid Amazon or Flipkart product URL";
+            return;
+        }
+
+        elements.compareModal.style.display = "none";
+        showLoading(loader);
+
+        fetch(`/get_product_details/${productId}`)
+            .then(res => res.json())
+            .then(currentProductData => {
+                if (currentProductData.status !== "success") throw new Error("Current product not found");
+
+                return fetch('/compare_with_url', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: url })
+                });
+            })
+            .then(res => res.json())
+            .then(compareProductData => {
+                hideLoading(loader);
+                if (compareProductData.status !== "success") {
+                    throw new Error(compareProductData.message || "Failed to fetch comparison product");
+                }
+                renderUrlComparison(currentProductData.product, compareProductData.product);
+            })
+            .catch(error => {
+                hideLoading(loader);
+                elements.urlError.textContent = error.message || "Error occurred during comparison.";
+            });
+    });
+
+    function renderComparisonResults(data) {
+        elements.comparisonContainer.style.display = "none";
+        elements.comparisonTable.style.display = "block";
+        elements.comparisonTable.innerHTML = generateTable(data);
+        
+        elements.resultsDiv.innerHTML = `
+            <div class="link-container">
+                <a href="${data.product_urls.amazon_link}" class="styled-link amazon-link" target="_blank">
+                    <i class="fas fa-shopping-cart"></i> Amazon: Go to Amazon
+                </a>
+                <a href="${data.product_urls.flipkart_link}" class="styled-link flipkart-link" target="_blank">
+                    <i class="fas fa-shopping-cart"></i> Flipkart: Go to Flipkart
+                </a>
+            </div>
+        `;
+    }
+
+    function renderUrlComparison(currentProduct, compareProduct) {
+        elements.comparisonContainer.style.display = "flex";
+        elements.comparisonContainer.innerHTML = `
+            <div class="comparison-table-wrapper">
+                <div class="comparison-card">
+                    <h3>Current Product</h3>
+                    ${renderProductTable(currentProduct)}
+                </div>
+                <div class="comparison-card">
+                    <h3>Comparison Product</h3>
+                    ${renderProductTable(compareProduct)}
+                </div>
+            </div>
+        `;
+    }
+
+    function renderProductTable(product) {
+        if (!product) return `<p>No data found.</p>`;
+        return `
+            <div class="product-image-container">
+                <img src="${product.imageUrl || product['Image URL'] || ''}" 
+                     alt="Product Image" class="product-table-image">
+            </div>
+            <table class="product-comparison-table">
+                <tr><td><strong>Name</strong></td><td>${product.name || product['Product Name'] || ''}</td></tr>
+                <tr><td><strong>Price</strong></td><td>${product.price || product['Price'] || ''}</td></tr>
+                <tr><td><strong>Rating</strong></td><td>${product.rating || product['Rating'] || ''}</td></tr>
+                <tr><td><strong>Buy Link</strong></td><td><a href="${product.buy_link || '#'}" target="_blank">Buy Now</a></td></tr>
+            </table>
+        `;
+    }
+
+    // Scroll to top functionality
+    window.addEventListener("scroll", function() {
+        elements.scrollToTop.classList.toggle("show", window.scrollY > 300);
+    });
+    elements.scrollToTop.addEventListener("click", function() {
+        window.scrollTo({ top: 0, behavior: "smooth" });
     });
 });
 
-// ----------------- END OF PRICE ALERT FUNCTIONALITY -------------------
+// Fallback function for demo purposes
+function fetchProductDetails() {
+    return new Promise(resolve => {
+        setTimeout(() => {
+            resolve({
+                name: "Demo Product",
+                price: "₹1,999",
+                rating: "4.2",
+                imageUrl: "https://via.placeholder.com/300",
+                buy_link: "#"
+            });
+        }, 1000);
+    });
+}
+
+// Helper function for comparison table (if needed elsewhere)
+function generateTable(data) {
+    // Implementation would go here
+    return '';
+}

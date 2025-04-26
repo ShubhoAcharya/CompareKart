@@ -798,60 +798,168 @@ footer {
     padding: 0.8rem 0;
 }
 
-/* --- Graph Section --- */
+/* Graph Section Styles */
 .graph-section {
-    flex: 2 1 600px;
-    min-width: 350px;
-    background: linear-gradient(135deg, #e0e7ff 0%, #f9fafb 100%);
-    border-radius: 14px;
-    box-shadow: 0 4px 16px rgba(80, 80, 180, 0.07);
-    padding: 2rem 2.5rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    flex: 2;
+    min-width: 500px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    padding: 2rem;
+    margin-left: 2rem;
 }
 
 .price-summary {
-    background: transparent;
-    box-shadow: none;
-    padding: 0 0 1.5rem 0;
-    margin-bottom: 0.5rem;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: #f8fafc;
+    border-radius: 8px;
 }
 
 .price-summary h2 {
-    color: #22223b;
-    font-size: 1.3rem;
-    margin-bottom: 0.7rem;
+    font-size: 1.4rem;
+    color: #1e293b;
+    margin-bottom: 1rem;
+    font-weight: 600;
 }
 
 .price-label {
-    font-size: 1.08rem;
-    margin: 0.3rem 0;
-    padding: 7px 18px;
-    border-radius: 5px;
     display: inline-block;
+    padding: 0.5rem 1rem;
+    margin: 0.3rem;
+    border-radius: 20px;
+    font-size: 1rem;
+    font-weight: 500;
 }
 
 .lowest-price {
-    background: #ffeaea;
-    color: #d32f2f;
+    background-color: #fee2e2;
+    color: #b91c1c;
 }
 
 .average-price {
-    background: #e3f2fd;
-    color: #1976d2;
+    background-color: #dbeafe;
+    color: #1d4ed8;
 }
 
 #chart-container {
     width: 100%;
-    min-width: 300px;
-    max-width: 600px;
     height: 400px;
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 2px 12px rgba(80, 80, 180, 0.08);
-    padding: 1rem;
     margin: 0 auto;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* Graph Loading States */
+.graph-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #4f46e5;
+}
+
+.graph-loading .spinner {
+    margin-bottom: 1rem;
+}
+
+.graph-error {
+    text-align: center;
+    padding: 1.5rem;
+    background: #fee2e2;
+    border-radius: 8px;
+    color: #b91c1c;
+    margin: 1rem 0;
+}
+
+.graph-error p {
+    margin-bottom: 1rem;
+}
+
+.btn-retry {
+    padding: 0.5rem 1rem;
+    background: #4f46e5;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-retry:hover {
+    background: #4338ca;
+}
+
+/* 🪟 Highcharts Glassy Modern Theme */
+.highcharts-background {
+    fill: transparent;
+}
+
+.highcharts-container {
+    font-family: 'Segoe UI', sans-serif !important;
+    backdrop-filter: blur(4px);
+}
+
+.highcharts-title {
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+    fill: #1f2937 !important;
+}
+
+.highcharts-subtitle {
+    font-size: 0.85rem !important;
+    fill: #6b7280 !important;
+}
+
+.highcharts-axis-title {
+    font-size: 0.85rem !important;
+    fill: #475569 !important;
+    font-weight: 500 !important;
+}
+
+.highcharts-axis-labels text {
+    fill: #64748b !important;
+    font-size: 0.75rem !important;
+}
+
+/* Semi-transparent tooltip box with blur */
+.highcharts-tooltip-box {
+    fill: rgba(255, 255, 255, 0.8);
+    stroke: #e2e8f0;
+    stroke-width: 1px;
+    backdrop-filter: blur(6px);
+    rx: 8;
+    ry: 8;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.highcharts-tooltip text {
+    fill: #1f2937 !important;
+    font-size: 0.85rem !important;
+    font-weight: 500;
+}
+
+/* Point hover effect (optional) */
+.highcharts-point-hover {
+    stroke: #14b8a6 !important;
+    stroke-width: 2;
+}
+
+
+/* Responsive Adjustments */
+@media (max-width: 900px) {
+    .graph-section {
+        margin-left: 0;
+        margin-top: 2rem;
+        min-width: auto;
+    }
+    
+    #chart-container {
+        height: 300px;
+    }
 }
 
 /* --- Star Rating Styles --- */
@@ -910,67 +1018,102 @@ footer {
 
 /* Responsive Styles */
 /* --- 🔔 Modern Price Alert Form --- */
+/* Add these styles to your existing CSS */
 .price-alert-form {
-    width: 100%;
-    background: linear-gradient(135deg, #fdfbfb, #ebedee);
-    border-radius: 16px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
-    padding: 1.5rem;
-    margin-top: 1.5rem;
-    text-align: center;
-    transition: all 0.3s ease-in-out;
-}
-
-.price-alert-form h3 {
-    font-size: 1.3rem;
-    margin-bottom: 1rem;
-    color: #4f46e5;
-    font-weight: 700;
+    margin: 2rem auto;
+    padding: 2rem;
+    max-width: 500px;
+    background: var(--card-bg);
+    box-shadow: var(--card-shadow);
+    border-radius: 12px;
 }
 
 .price-alert-form input {
-    width: 90%;
+    width: 100%;
     padding: 12px 16px;
-    margin: 0.5rem 0;
-    border: 1px solid #d1d5db;
-    border-radius: 10px;
+    margin: 8px 0;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
     font-size: 1rem;
-    outline: none;
-    background: white;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    transition: all 0.3s ease;
+    background-color: white;
 }
 
 .price-alert-form input:focus {
-    border-color: #6366f1;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+    outline: none;
 }
 
 .price-alert-form button {
     width: 100%;
-    padding: 0.8rem;
+    padding: 12px;
+    margin-top: 12px;
     background: linear-gradient(90deg, #4f46e5 0%, #14b8a6 100%);
     color: white;
     border: none;
-    border-radius: 30px;
+    border-radius: 8px;
     font-weight: 600;
-    font-size: 1.05rem;
+    font-size: 1rem;
     cursor: pointer;
-    margin-top: 0.8rem;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(20, 184, 166, 0.25);
 }
 
 .price-alert-form button:hover {
     background: linear-gradient(90deg, #14b8a6 0%, #4f46e5 100%);
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(20, 184, 166, 0.4);
+}
+
+.price-alert-form button:disabled {
+    background: #94a3b8;
+    cursor: not-allowed;
+    transform: none;
 }
 
 .alert-message {
-    margin-top: 0.8rem;
-    color: #10b981;
-    font-size: 0.95rem;
-    font-weight: 500;
+    margin-top: 12px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.alert-message.success {
+    background-color: #dcfce7;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+}
+
+.alert-message.error {
+    background-color: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+.alert-message.warning {
+    background-color: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+}
+
+/* --- EMAIL LOADER --- */
+#emailLoader {
+    display: none;
+    justify-content: center;
+    align-items: center;
+    margin-top: 1rem;
+}
+.spinner {
+    width: 30px;
+    height: 30px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+@keyframes spin {
+    to { transform: rotate(360deg); }
 }
 
 /* Modal Styles */

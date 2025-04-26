@@ -330,6 +330,16 @@
                 <a href="{{ request.host_url }}terms" class="legal-link">Terms of Service</a>
                 <a href="{{ request.host_url }}unsubscribe" class="legal-link">Unsubscribe</a>
             </div>
+
+            <!-- Add this section just before the footer -->
+            <div class="alert-management" style="margin: 24px 0; text-align: center;">
+                <p style="font-size: 14px; color: #64748b; margin-bottom: 12px;">
+                    To remove this alert, click the link below:
+                </p>
+                <a href="{{ remove_alert_url }}" style="color: #ef4444; font-size: 14px; text-decoration: none;">
+                    Remove this price alert
+                </a>
+            </div>
             
             <p class="footer-text">© {{ year }} CompareKart. All rights reserved.</p>
         </div>
