@@ -20,6 +20,11 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function handleSearch() {
         var searchQuery = searchQueryInput.value;
+        if (!searchQuery) {
+            alert("Please enter a search term");
+            return;
+        }
+    
         fetch('/search', {
             method: 'POST',
             headers: {
@@ -29,23 +34,33 @@ document.addEventListener("DOMContentLoaded", function() {
         })
         .then(response => response.json())
         .then(data => {
-            var resultsDiv = document.getElementById("results");
-            resultsDiv.innerHTML = `
-                <div class="link-container">
-                    <a href="${data.amazon_link}" class="styled-link amazon-link" target="_blank">
-                        <i class="fas fa-shopping-cart"></i> Amazon: Go to Amazon
-                    </a>
-                    <a href="${data.flipkart_link}" class="styled-link flipkart-link" target="_blank">
-                        <i class="fas fa-shopping-cart"></i> Flipkart: Go to Flipkart
-                    </a>
-                </div>
-            `;
+            if (data.status === 'success') {
+                // Redirect to product display page with the found product
+                window.location.href = data.redirect;
+            } else if (data.status === 'not_found') {
+                // Show not found message
+                var resultsDiv = document.getElementById("results");
+                resultsDiv.innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p>${data.message}</p>
+                    </div>
+                `;
+            } else {
+                throw new Error(data.message || 'Search failed');
+            }
         })
         .catch((error) => {
             console.error('Error:', error);
+            var resultsDiv = document.getElementById("results");
+            resultsDiv.innerHTML = `
+                <div class="error-message">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <p>Error: ${error.message}</p>
+                </div>
+            `;
         });
     }
-
     searchButton.addEventListener("click", handleSearch);
 
     searchQueryInput.addEventListener("keypress", function(event) {

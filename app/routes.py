@@ -156,17 +156,41 @@ def privacy():
 def search():
     try:
         data = request.json
-        product_name = data.get('query')
-        if not product_name:
-            return jsonify({'status': 'error', 'message': 'No product name provided'}), 400
+        query = data.get('query')
+        if not query:
+            return jsonify({'status': 'error', 'message': 'No search query provided'}), 400
 
-        amazon_url = search_amazon(product_name)
-        flipkart_url = search_flipkart_product(product_name)
+        with engine.connect() as connection:
+            # Search for products matching the query in name
+            results = connection.execute(
+                text("""
+                    SELECT id, name, price, rating, image_link 
+                    FROM products 
+                    WHERE name ILIKE :query
+                    ORDER BY last_updated DESC
+                    LIMIT 1
+                """),
+                {"query": f"%{query}%"}
+            ).fetchone()
 
-        with open('./product_urls.json', 'w') as f:
-            json.dump({'amazon_link': amazon_url, 'flipkart_link': flipkart_url}, f)
+            if results:
+                return jsonify({
+                    'status': 'success',
+                    'product': {
+                        'id': results.id,
+                        'name': results.name,
+                        'price': f"₹{int(results.price):,}" if results.price else "N/A",
+                        'rating': str(results.rating) if results.rating else "N/A",
+                        'imageUrl': results.image_link or ""
+                    },
+                    'redirect': f'/product_display?id={results.id}'
+                })
+            else:
+                return jsonify({
+                    'status': 'not_found',
+                    'message': 'No matching products found'
+                })
 
-        return jsonify({'amazon_link': amazon_url, 'flipkart_link': flipkart_url})
     except Exception as e:
         log_error("Search failed", e)
         return jsonify({'status': 'error', 'message': 'Search failed'}), 500
