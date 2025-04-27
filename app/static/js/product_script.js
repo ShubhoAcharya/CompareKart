@@ -29,7 +29,15 @@ document.addEventListener("DOMContentLoaded", function () {
             container.style.display = "none";
             document.querySelector("main").appendChild(container);
             return container;
-        })()
+        })(),
+        // Added for similar products
+        similarProductsLoader: document.getElementById("similarProductsLoader"),
+        similarProductsContainer: document.getElementById("similarProductsContainer"),
+        similarProductsGrid: document.getElementById("similarProductsGrid"),
+        similarProductsError: document.getElementById("similarProductsError"),
+        similarProductsErrorMessage: document.getElementById("similarProductsErrorMessage"),
+        retrySimilarProductsBtn: document.getElementById("retrySimilarProductsBtn"),
+        similarProductsCount: document.getElementById("similarProductsCount"),
     };
 
     // Get product ID from URL
@@ -115,6 +123,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 renderProduct(data.product);
                 if (data.modified_url) {
                     loadGraphData(productId, data.modified_url);
+                    loadSimilarProducts(data.modified_url); // Add this line
                 }
             } else {
                 showProductError("Product not found");
@@ -145,6 +154,81 @@ document.addEventListener("DOMContentLoaded", function () {
             showGraphError("Error loading price history", productId, modifiedUrl);
         }
     }
+
+    // Similar products loading
+    async function loadSimilarProducts(modifiedUrl) {
+        try {
+            showLoading(elements.similarProductsLoader, "Loading similar products...");
+            hideElement(elements.similarProductsContainer);
+            hideElement(elements.similarProductsError);
+
+            const response = await fetch(`/get_similar_products?modified_url=${encodeURIComponent(modifiedUrl)}`);
+            const data = await response.json();
+
+            if (data.status === "success" && data.products && data.products.length > 0) {
+                renderSimilarProducts(data.products);
+            } else {
+                showSimilarProductsError("No similar products found");
+            }
+        } catch (error) {
+            console.error('Error loading similar products:', error);
+            showSimilarProductsError("Error loading similar products");
+        } finally {
+            hideLoading(elements.similarProductsLoader);
+        }
+    }
+
+    function renderSimilarProducts(products) {
+        elements.similarProductsCount.textContent = `Found ${products.length} similar products`;
+
+        let html = '';
+        products.forEach(product => {
+            html += `
+                <div class="similar-product-card">
+                    <div class="store-logo">
+                        <img src="${product.store_img}" alt="Store logo" onerror="this.src='../static/images/not_found_image.png'">
+                    </div>
+                    <div class="product-info">
+                        <h4 class="product-name">${product.product_name}</h4>
+                        <p class="product-price">${product.price}</p>
+                    </div>
+                    <a href="${product.buy_link}" target="_blank" class="buy-button">
+                        Buy Now <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            `;
+        });
+
+        elements.similarProductsGrid.innerHTML = html;
+        showElement(elements.similarProductsContainer);
+    }
+
+    function showSimilarProductsError(message) {
+        elements.similarProductsErrorMessage.textContent = message;
+        showElement(elements.similarProductsError);
+    }
+
+    function showElement(element) {
+        element.style.display = 'block';
+    }
+
+    function hideElement(element) {
+        element.style.display = 'none';
+    }
+
+    // Add event listener for retry button
+    elements.retrySimilarProductsBtn.addEventListener('click', function() {
+        const productId = new URLSearchParams(window.location.search).get('id');
+        if (productId) {
+            fetch(`/get_product_details/${productId}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === "success" && data.modified_url) {
+                        loadSimilarProducts(data.modified_url);
+                    }
+                });
+        }
+    });
 
     // UI Helper Functions
     function showLoading(element, message = "") {
@@ -538,3 +622,4 @@ function generateTable(data) {
     // Implementation would go here
     return '';
 }
+

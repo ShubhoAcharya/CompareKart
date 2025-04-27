@@ -146,6 +146,33 @@
         <div class="spinner"></div>
     </div>
 
+        <!-- Similar Products Section -->
+    <section class="similar-products-section">
+        <div class="modern-section-header">
+            <h2>
+                <span class="icon"><i class="fas fa-search"></i></span>
+                Similar Products at Different Stores
+            </h2>
+            <p>Compare prices for similar products across multiple retailers</p>
+        </div>
+        
+        <div id="similarProductsLoader" class="graph-loading">
+            <div class="spinner"></div>
+            <p>Loading similar products...</p>
+        </div>
+        
+        <div id="similarProductsContainer" style="display: none;">
+            <p class="similar-products-count" id="similarProductsCount"></p>
+            <div class="similar-products-grid" id="similarProductsGrid"></div>
+        </div>
+        
+        <div id="similarProductsError" class="graph-error" style="display: none;">
+            <i class="fas fa-exclamation-triangle"></i>
+            <p id="similarProductsErrorMessage">Failed to load similar products</p>
+            <button id="retrySimilarProductsBtn" class="btn-retry">Try Again</button>
+        </div>
+    </section>
+
     <footer>
         <div class="footer-content">
             <p>&copy; <span id="currentYear"></span> CompareKart. All rights reserved.</p>

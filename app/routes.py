@@ -518,3 +518,26 @@ def compare_with_url():
     except Exception as e:
         log_error("Comparison failed", e)
         return jsonify({'status': 'error', 'message': 'Comparison failed'}), 500
+    
+
+@main.route('/get_similar_products', methods=['GET'])
+def get_similar_products():
+    try:
+        modified_url = request.args.get('modified_url')
+        if not modified_url:
+            return jsonify({'status': 'error', 'message': 'Missing modified_url'}), 400
+
+        proc = run(
+            ["python", "./app/found_similar_products.py", modified_url],
+            stdout=PIPE, stderr=PIPE, text=True, timeout=30
+        )
+        
+        if proc.returncode != 0:
+            return jsonify({'status': 'error', 'message': 'Failed to fetch similar products'}), 500
+            
+        data = json.loads(proc.stdout)
+        return jsonify(data)
+        
+    except Exception as e:
+        log_error("Error in get_similar_products", e)
+        return jsonify({'status': 'error', 'message': 'Internal server error'}), 500
