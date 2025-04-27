@@ -38,6 +38,17 @@ document.addEventListener("DOMContentLoaded", function () {
         similarProductsErrorMessage: document.getElementById("similarProductsErrorMessage"),
         retrySimilarProductsBtn: document.getElementById("retrySimilarProductsBtn"),
         similarProductsCount: document.getElementById("similarProductsCount"),
+
+                // Add to the elements object
+        priceDropLoader: document.getElementById("priceDropLoader"),
+        priceDropContainer: document.getElementById("priceDropContainer"),
+        priceDropError: document.getElementById("priceDropError"),
+        priceDropErrorMessage: document.getElementById("priceDropErrorMessage"),
+        retryPriceDropBtn: document.getElementById("retryPriceDropBtn"),
+        dropChancePercentage: document.getElementById("dropChancePercentage"),
+        priceDropRecommendation: document.getElementById("priceDropRecommendation"),
+        priceDropBuyLink: document.getElementById("priceDropBuyLink"),
+        priceDropPointer: document.getElementById("priceDropPointer"),
     };
 
     // Get product ID from URL
@@ -154,6 +165,95 @@ document.addEventListener("DOMContentLoaded", function () {
             showGraphError("Error loading price history", productId, modifiedUrl);
         }
     }
+
+        // Add this function
+    async function loadPriceDropPrediction(modifiedUrl) {
+        try {
+            showLoading(elements.priceDropLoader, "Loading price prediction...");
+            hideElement(elements.priceDropContainer);
+            hideElement(elements.priceDropError);
+            
+            const response = await fetch(`/get_price_drop_prediction?modified_url=${encodeURIComponent(modifiedUrl)}`);
+            const data = await response.json();
+            
+            if (data.status === "success" && data.price_drop_data) {
+                renderPriceDropPrediction(data.price_drop_data);
+            } else {
+                showPriceDropError(data.message || "No price drop prediction available");
+            }
+        } catch (error) {
+            console.error('Error loading price drop prediction:', error);
+            showPriceDropError("Error loading price drop prediction");
+        } finally {
+            hideLoading(elements.priceDropLoader);
+        }
+    }
+
+    function renderPriceDropPrediction(data) {
+        // Update percentage
+        elements.dropChancePercentage.textContent = `${data.chance_of_drop}%`;
+        
+        // Update recommendation text
+        elements.priceDropRecommendation.textContent = data.recommendation;
+        
+        // Update buy link
+        if (data.buy_link) {
+            elements.priceDropBuyLink.href = data.buy_link;
+        }
+        
+        // Update pointer rotation (if available)
+        if (data.pointer_rotation) {
+            elements.priceDropPointer.setAttribute('transform', `rotate(${data.pointer_rotation})`);
+        }
+        
+        showElement(elements.priceDropContainer);
+    }
+
+    function showPriceDropError(message) {
+        elements.priceDropErrorMessage.textContent = message;
+        showElement(elements.priceDropError);
+    }
+
+    // Add event listener for retry button
+    elements.retryPriceDropBtn.addEventListener('click', function() {
+        const productId = new URLSearchParams(window.location.search).get('id');
+        if (productId) {
+            fetch(`/get_product_details/${productId}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === "success" && data.modified_url) {
+                        loadPriceDropPrediction(data.modified_url);
+                    }
+                });
+        }
+    });
+
+    // Update the loadProductDetails function to call loadPriceDropPrediction
+    async function loadProductDetails(productId) {
+        try {
+            showLoading(elements.productLoader, "Loading product details...");
+            
+            const response = await fetch(`/get_product_details/${productId}`);
+            const data = await response.json();
+            
+            if (data.status === "success") {
+                renderProduct(data.product);
+                if (data.modified_url) {
+                    loadGraphData(productId, data.modified_url);
+                    loadSimilarProducts(data.modified_url);
+                    loadPriceDropPrediction(data.modified_url); // Add this line
+                }
+            } else {
+                showProductError("Product not found");
+            }
+        } catch (error) {
+            console.error('Error loading product:', error);
+            showProductError("Error loading product details");
+        } finally {
+            hideLoading(elements.productLoader);
+        }
+    }
+
 
     // Similar products loading
     async function loadSimilarProducts(modifiedUrl) {

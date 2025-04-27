@@ -541,3 +541,58 @@ def get_similar_products():
     except Exception as e:
         log_error("Error in get_similar_products", e)
         return jsonify({'status': 'error', 'message': 'Internal server error'}), 500
+    
+
+@main.route('/get_price_drop_prediction', methods=['GET'])
+def get_price_drop_prediction():
+    try:
+        modified_url = request.args.get('modified_url')
+        if not modified_url:
+            return jsonify({'status': 'error', 'message': 'Missing modified_url'}), 400
+
+        proc = run(
+            ["python", "./app/price_drop_prediction.py", modified_url],
+            stdout=PIPE, stderr=PIPE, timeout=60  # REMOVE text=True here
+        )
+        
+        if proc.returncode != 0:
+            error_msg = proc.stderr.decode('utf-8', errors='replace') if proc.stderr else "Unknown error in price drop prediction script"
+            current_app.logger.error(f"Price drop script failed: {error_msg}")
+            return jsonify({
+                'status': 'error', 
+                'message': 'Failed to fetch price drop prediction',
+                'details': error_msg
+            }), 500
+        
+        try:
+            output = proc.stdout.decode('utf-8', errors='replace') if proc.stdout else None
+            if not output:
+                raise ValueError("No output from price drop script")
+
+            data = json.loads(output)
+
+            if data.get('status') != 'success':
+                current_app.logger.error(f"Price drop prediction failed: {data.get('message', 'Unknown error')}")
+                return jsonify({
+                    'status': 'error',
+                    'message': data.get('message', 'Failed to get price drop prediction')
+                }), 500
+                
+            return jsonify(data)
+
+        except json.JSONDecodeError as e:
+            raw_output = proc.stdout.decode('utf-8', errors='replace') if proc.stdout else "No output"
+            current_app.logger.error(f"Failed to parse price drop data: {e}\nRaw output: {raw_output}")
+            return jsonify({
+                'status': 'error',
+                'message': 'Invalid data format from prediction service',
+                'details': str(e)
+            }), 500
+
+    except Exception as e:
+        current_app.logger.error(f"Error in get_price_drop_prediction: {str(e)}", exc_info=True)
+        return jsonify({
+            'status': 'error', 
+            'message': 'Internal server error',
+            'details': str(e)
+        }), 500
