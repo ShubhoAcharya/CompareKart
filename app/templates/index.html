@@ -37,20 +37,40 @@
             </a>
         </div>
     </header>
+    <!-- Modern Category Drawer -->
     <nav class="category-drawer">
         <ul>
-            <li><a href="#"><i class="fas fa-laptop"></i> Electronics</a></li>
-            <li><a href="#"><i class="fas fa-tv"></i> TVs & Appliances</a></li>
-            <li><a href="#"><i class="fas fa-male"></i> Men</a></li>
-            <li><a href="#"><i class="fas fa-female"></i> Women</a></li>
-            <li><a href="#"><i class="fas fa-baby"></i> Baby & Kids</a></li>
-            <li><a href="#"><i class="fas fa-couch"></i> Home & Furniture</a></li>
-            <li><a href="#"><i class="fas fa-football-ball"></i> Sports, Books & More</a></li>
-            <li><a href="#"><i class="fas fa-plane"></i> Flights</a></li>
-            <li><a href="#"><i class="fas fa-tags"></i> Offer Zone</a></li>
-            <li><a href="#"><i class="fas fa-shopping-basket"></i> Grocery</a></li>
+            {% for category in categories %}
+            <li>
+                <a href="#" data-category-id="{{ category.id }}" class="category-link">
+                    <i class="{{ category.icon }}"></i> 
+                    <span class="category-name">{{ category.name }}</span>
+                </a>
+            </li>
+            {% endfor %}
         </ul>
     </nav>
+
+    <!-- Featured Products Section -->
+    <section class="category-products-section" id="categoryProducts">
+        <div class="modern-section-header">
+            <h2>
+                <span class="icon"><i class="fas fa-star"></i></span>
+                Featured Products
+            </h2>
+            <p>Browse our top products in this category</p>
+        </div>
+        
+        <div class="products-grid" id="productsGrid">
+            <!-- Products will be loaded here dynamically -->
+            <div class="no-products">Select a category to view products</div>
+        </div>
+        
+        <div id="categoryLoader" class="graph-loading" style="display: none;">
+            <div class="spinner"></div>
+            <p>Loading products...</p>
+        </div>
+    </section>
     <main>
         <h2>Welcome to Comparekart</h2>
         <p>Your one-stop destination for comparing the best products.</p>

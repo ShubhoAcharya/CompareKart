@@ -124,19 +124,20 @@
     <div id="compareModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
-            <h3>Compare Options</h3>
+            <h3>Compare Products</h3>
             <div class="compare-options">
-                <button id="similarProductsBtn" class="compare-option-btn">
-                    <i class="fas fa-search"></i> Find Similar Products
-                </button>
-                <button id="pasteUrlBtn" class="compare-option-btn">
-                    <i class="fas fa-paste"></i> Paste Product URL
-                </button>
-            </div>
-            <div id="urlInputContainer" style="display: none;">
-                <input type="text" id="productUrlInput" placeholder="Paste Amazon or Flipkart product URL">
-                <button id="submitUrlBtn">Compare</button>
-                <p id="urlError" class="error-message"></p>
+                <div id="urlInputContainer">
+                    <p>How many products do you want to compare (2-5)?</p>
+                    <select id="compareCount" class="compare-select">
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                    </select>
+                    <div id="urlInputs"></div>
+                    <button id="submitCompareBtn" class="compare-submit-btn">Compare</button>
+                    <p id="urlError" class="error-message"></p>
+                </div>
             </div>
         </div>
     </div>
@@ -170,76 +171,6 @@
             <i class="fas fa-exclamation-triangle"></i>
             <p id="similarProductsErrorMessage">Failed to load similar products</p>
             <button id="retrySimilarProductsBtn" class="btn-retry">Try Again</button>
-        </div>
-    </section>
-
-        <!-- Price Drop Prediction Section -->
-    <section class="price-drop-prediction">
-        <div class="modern-section-header">
-            <h2>
-                <span class="icon"><i class="fas fa-chart-line"></i></span>
-                Price Drop Prediction
-            </h2>
-            <p>Get insights on when might be the best time to buy</p>
-        </div>
-        
-        <div id="priceDropLoader" class="graph-loading">
-            <div class="spinner"></div>
-            <p>Loading price prediction...</p>
-        </div>
-        
-        <div id="priceDropContainer" class="border-2 border-gray-200 rounded-xl justify-center items-center relative text-center flex flex-col gap-2 text-base md:text-xl" style="display: none;">
-            <div id="speedo-container" class="transform scale-50 md:scale-100 mb-[-30px] md:mb-[-20px] md:pt-12 relative md:pl-[20px]">
-                <p class="absolute sm:text-sm text-[#151515b5] font-bold" style="transform: translate(-90px, 50px);">Go Ahead!<br>Buy Now</p>
-                <svg class="speedometer" width="100%" height="100%">
-                    <g>
-                        <path fill="#FF4646" d="M4.00004 130c-2.20914 0-4.00691571-1.791-3.933733-3.999C.586956 110.293 4.17115 94.7907 10.6569 80.2511c7.0357-15.7723 17.348-30.1034 30.3482-42.175C54.0053 26.0045 69.4388 16.4288 86.4244 9.89564 103.41 3.36253 121.615-.0000136 140-.00001137 158.385-.00000913 176.59 3.36254 193.576 9.89566c16.985 6.53314 32.419 16.10884 45.419 28.18044s23.313 26.4027 30.348 42.1751c6.486 14.5396 10.07 30.0418 10.591 45.7498.073 2.208-1.725 3.999-3.934 3.999h-58.669c-2.209 0-3.987-1.793-4.127-3.997-.479-7.576-2.32-15.033-5.455-22.061-3.685-8.2614-9.087-15.7679-15.896-22.0909-6.81-6.3231-14.894-11.3387-23.79-14.7607-8.897-3.422-18.433-5.1833-28.063-5.1833-9.63 0-19.166 1.7613-28.062 5.1833-8.897 3.422-16.9813 8.4376-23.7907 14.7606-6.8094 6.3231-12.2109 13.8296-15.8961 22.091-3.135 7.028-4.9758 14.485-5.4555 22.061-.1396 2.204-1.9173 3.997-4.1265 3.997H4.00004Z"></path>
-                        <path fill="#FF7C1D" stroke="#fff" stroke-width="4" d="M18.5942 61.5326C5.88466 81.0074-1.17909 103.196-1.93268 125.934-2.04474 129.316.704239 132 3.99995 132H62.6692c3.3437 0 5.9212-2.694 6.1224-5.871.6774-10.697 4.1547-21.11 10.1692-30.3261 6.7386-10.3255 16.4083-18.758 27.9742-24.3649 11.566-5.6072 24.575-8.1682 37.612-7.3964 11.798.6984 23.198 4.1014 33.187 9.8721 2.642 1.5258 6.117.9705 8.023-1.5694l33.297-44.3811c2.076-2.7679 1.405-6.7825-1.627-8.6157C196.971 6.9794 173.414-.289371 149.025-1.73314 123.157-3.26443 97.3262 1.8145 74.3349 12.9605c-22.992 11.1462-42.2754 27.9394-55.7407 48.5721Z"></path>
-                        <mask id="b" width="100" height="107" x="-3.99999" y="27" fill="#000" maskUnits="userSpaceOnUse">
-                            <rect width="100" height="107" x="-3.99999" y="27" fill="#fff"></rect>
-                            <path d="M4.00004 130c-2.20914 0-4.0069158-1.791-3.933735-3.999C.651727 108.338 5.10984 90.9565 13.185 74.9243c8.1423-16.1656 19.7759-30.5896 34.1638-42.3834 1.6212-1.3289 3.9926-1.112 5.3943.4465l37.3726 41.551c1.5541 1.7278 1.3058 4.4045-.442 5.9359-6.7116 5.8805-12.1776 12.8936-16.0983 20.6777-3.9394 7.821-6.2354 16.255-6.7797 24.851-.1396 2.204-1.9173 3.997-4.1265 3.997H4.00004Z"></path>
-                        </mask>
-                        <path fill="#00A80B" d="M4.00004 130c-2.20914 0-4.0069158-1.791-3.933735-3.999C.651727 108.338 5.10984 90.9565 13.185 74.9243c8.1423-16.1656 19.7759-30.5896 34.1638-42.3834 1.6212-1.3289 3.9926-1.112 5.3943.4465l37.3726 41.551c1.5541 1.7278 1.3058 4.4045-.442 5.9359-6.7116 5.8805-12.1776 12.8936-16.0983 20.6777-3.9394 7.821-6.2354 16.255-6.7797 24.851-.1396 2.204-1.9173 3.997-4.1265 3.997H4.00004Z"></path>
-                        <path stroke="#fff" stroke-width="8" d="M4.00004 130c-2.20914 0-4.0069158-1.791-3.933735-3.999C.651727 108.338 5.10984 90.9565 13.185 74.9243c8.1423-16.1656 19.7759-30.5896 34.1638-42.3834 1.6212-1.3289 3.9926-1.112 5.3943.4465l37.3726 41.551c1.5541 1.7278 1.3058 4.4045-.442 5.9359-6.7116 5.8805-12.1776 12.8936-16.0983 20.6777-3.9394 7.821-6.2354 16.255-6.7797 24.851-.1396 2.204-1.9173 3.997-4.1265 3.997H4.00004Z" mask="url(#b)"></path>
-                    </g>
-                    <g class="pointer" transform="translate(140, 130)" style="fill: rgb(200, 200, 200);">
-                        <path id="priceDropPointer" d="M5,0C3.333333333333333,-67.5,1.6666666666666667,-135,0,-135C-1.6666666666666667,-135,-3.333333333333333,0,-5,0C-3.333333333333333,0,-1.6666666666666667,5,0,5C1.6666666666666667,5,3.333333333333333,2.5,5,0" transform="rotate(-65)" class="transition-transform duration-500"></path>
-                    </g>
-                </svg>
-            </div>
-            <div class="px-4 -mt-3 pb-6 md:p-12 flex flex-col gap-4 w-full max-w-lg">
-                <div class="max-w-[60%] md:max-w-none mx-auto">
-                    <span class="font-bold"><span>Low</span></span>
-                    (<span id="dropChancePercentage" style="color:#00A80B">0%</span>)
-                    chance of price drop
-                </div>
-                <div class="mb-6">
-                    in <label class="inline-block relative mx-auto bg-gray-100 border-2 border-white shadow-md rounded-lg z-0 ml-2" for="selectTab">
-                        <select id="selectTab" class="mx-auto py-2 text-base font-semibold custom-select pl-4 pr-10 outline-none focus:outline-none z-[1] cursor-pointer bg-transparent">
-                            <option value="1">2-3 days</option>
-                            <option value="2">1 Week</option>
-                            <option value="3">1 Month</option>
-                        </select>
-                        <span class="absolute h-2 -translate-y-1/2 right-0 top-1/2 mr-4 z-[-1]">
-                            <img src="data:image/svg+xml,%3csvg%20xmlns='http://www.w3.org/2000/svg'%20fill='none'%20viewBox='0%200%2015%2010'%3e%3cg%20clip-path='url(%23a)'%3e%3cpath%20stroke='%23000'%20stroke-linecap='round'%20stroke-linejoin='round'%20stroke-width='1.5'%20d='M13.5%202.00005S9.0811%208%207.5%208c-1.5812%200-6-6-6-6'/%3e%3c/g%3e%3cdefs%3e%3cclipPath%20id='a'%3e%3cpath%20fill='%23fff'%20d='M14.5.5v9H.5v-9z'/%3e%3c/clipPath%3e%3c/defs%3e%3c/svg%3e" alt="arrow" height="7.84px" width="13.14px" class="" loading="lazy">
-                        </span>
-                    </label>
-                </div>
-                <p id="priceDropRecommendation" class="max-w-[230px] md:max-w-[380px] mx-auto">This is the best time to <span class="block md:inline"><span class="font-semibold">buy</span> right away.</span></p>
-                <div class="flex flex-wrap md:flex-nowrap gap-4 items-center justify-center mx-auto max-w-[230px] md:max-w-lg w-full">
-                    <a id="priceDropBuyLink" href="#" target="_blank" rel="nofollow" class="order-1 md:order-none flex-1" aria-label="Buy button drop card">
-                        <button class="rounded-lg cursor-pointer px-6 py-3 flex items-center justify-center font-semibold bg-primary text-white hover:opacity-90 active:opacity-50 w-full" type="button">
-                            <div class="text-base md:text-lg whitespace-nowrap px-4">Buy Now</div>
-                        </button>
-                    </a>
-                </div>
-            </div>
-        </div>
-        
-        <div id="priceDropError" class="graph-error" style="display: none;">
-            <i class="fas fa-exclamation-triangle"></i>
-            <p id="priceDropErrorMessage">Failed to load price drop prediction</p>
-            <button id="retryPriceDropBtn" class="btn-retry">Try Again</button>
         </div>
     </section>
 

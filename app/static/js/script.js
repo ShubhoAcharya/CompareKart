@@ -171,3 +171,113 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 });
+
+
+// Category handling with smooth animations
+document.addEventListener('DOMContentLoaded', function() {
+    // Category click handler
+    document.querySelectorAll('.category-link').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const categoryId = this.getAttribute('data-category-id');
+            const categoryName = this.querySelector('.category-name').textContent;
+            loadCategoryProducts(categoryId, categoryName);
+            
+            // Update active state
+            document.querySelectorAll('.category-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            this.classList.add('active');
+        });
+    });
+
+    // Load first category by default
+    const firstCategory = document.querySelector('.category-link');
+    if (firstCategory) {
+        const categoryId = firstCategory.getAttribute('data-category-id');
+        const categoryName = firstCategory.querySelector('.category-name').textContent;
+        firstCategory.classList.add('active');
+        loadCategoryProducts(categoryId, categoryName);
+    }
+});
+
+async function loadCategoryProducts(categoryId, categoryName) {
+    const productsGrid = document.getElementById('productsGrid');
+    const loader = document.getElementById('categoryLoader');
+    const header = document.querySelector('.category-products-section .modern-section-header h2');
+    
+    try {
+        // Show loader with smooth transition
+        productsGrid.style.opacity = '0.5';
+        productsGrid.style.pointerEvents = 'none';
+        loader.style.display = 'flex';
+        
+        // Scroll to section smoothly
+        document.getElementById('categoryProducts').scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
+
+        // Update header with category name
+        header.innerHTML = `
+            <span class="icon"><i class="fas fa-tag"></i></span>
+            ${categoryName}
+        `;
+
+        // Fetch products
+        const response = await fetch(`/get_products_by_category/${categoryId}`);
+        const data = await response.json();
+        
+        // Render products with fade-in animation
+        if (data.status === 'success' && data.products.length > 0) {
+            productsGrid.innerHTML = data.products.map((product, index) => `
+                <div class="product-card" style="animation-delay: ${index * 0.05}s">
+                    <img src="${product.imageUrl || '../static/images/placeholder-product.png'}" 
+                         alt="${product.name}" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">${product.name}</h3>
+                        <p class="product-price">${product.price}</p>
+                        <p class="product-rating">
+                            <span class="stars">${'★'.repeat(Math.floor(product.rating || 0))}${'☆'.repeat(5 - Math.floor(product.rating || 0))}</span>
+                            ${product.rating || 'N/A'}
+                        </p>
+                        <a href="/product_display?id=${product.id}" class="view-product-btn">
+                            View Details <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            productsGrid.innerHTML = `
+                <div class="no-products" style="grid-column: 1 / -1">
+                    <i class="fas fa-box-open" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                    <p>No products found in this category</p>
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Error loading category products:', error);
+        productsGrid.innerHTML = `
+            <div class="no-products" style="grid-column: 1 / -1">
+                <i class="fas fa-exclamation-triangle" style="color: #ef4444; font-size: 2rem; margin-bottom: 1rem;"></i>
+                <p>Error loading products. Please try again.</p>
+                <button onclick="window.location.reload()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: var(--primary); color: white; border: none; border-radius: 0.5rem; cursor: pointer;">
+                    Refresh Page
+                </button>
+            </div>
+        `;
+    } finally {
+        // Hide loader and restore grid
+        setTimeout(() => {
+            loader.style.display = 'none';
+            productsGrid.style.opacity = '1';
+            productsGrid.style.pointerEvents = 'auto';
+            
+            // Add animation to product cards
+            document.querySelectorAll('.product-card').forEach(card => {
+                card.style.animation = 'fadeInUp 0.5s ease-out forwards';
+            });
+        }, 300);
+    }
+}
+

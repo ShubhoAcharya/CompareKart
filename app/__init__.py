@@ -18,6 +18,8 @@ def create_app():
     app.config['MAIL_PASSWORD'] = 'jyuc xvhg zkrl cdxl'
     app.config['MAIL_DEFAULT_SENDER'] = 'your_email@gmail.com'
 
+    app.config['BASE_URL'] = 'http://localhost:5000' 
+
     mail.init_app(app)
 
     # Register blueprints

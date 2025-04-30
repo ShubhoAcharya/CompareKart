@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
-    // DOM Elements - Updated to include search elements
+    // DOM Elements
     const elements = {
         productDetails: document.getElementById("productDetails"),
         productLoader: document.getElementById("productLoader"),
@@ -30,7 +30,6 @@ document.addEventListener("DOMContentLoaded", function () {
             document.querySelector("main").appendChild(container);
             return container;
         })(),
-        // Added for similar products
         similarProductsLoader: document.getElementById("similarProductsLoader"),
         similarProductsContainer: document.getElementById("similarProductsContainer"),
         similarProductsGrid: document.getElementById("similarProductsGrid"),
@@ -38,17 +37,6 @@ document.addEventListener("DOMContentLoaded", function () {
         similarProductsErrorMessage: document.getElementById("similarProductsErrorMessage"),
         retrySimilarProductsBtn: document.getElementById("retrySimilarProductsBtn"),
         similarProductsCount: document.getElementById("similarProductsCount"),
-
-                // Add to the elements object
-        priceDropLoader: document.getElementById("priceDropLoader"),
-        priceDropContainer: document.getElementById("priceDropContainer"),
-        priceDropError: document.getElementById("priceDropError"),
-        priceDropErrorMessage: document.getElementById("priceDropErrorMessage"),
-        retryPriceDropBtn: document.getElementById("retryPriceDropBtn"),
-        dropChancePercentage: document.getElementById("dropChancePercentage"),
-        priceDropRecommendation: document.getElementById("priceDropRecommendation"),
-        priceDropBuyLink: document.getElementById("priceDropBuyLink"),
-        priceDropPointer: document.getElementById("priceDropPointer"),
     };
 
     // Get product ID from URL
@@ -81,7 +69,6 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(data => {
             hideLoading(elements.loader);
             if (data.status === 'success') {
-                // Redirect to product display page with the found product
                 window.location.href = data.redirect;
             } else if (data.status === 'not_found') {
                 showSearchError(data.message || "No matching products found");
@@ -134,7 +121,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 renderProduct(data.product);
                 if (data.modified_url) {
                     loadGraphData(productId, data.modified_url);
-                    loadSimilarProducts(data.modified_url); // Add this line
+                    loadSimilarProducts(data.modified_url);
                 }
             } else {
                 showProductError("Product not found");
@@ -165,95 +152,6 @@ document.addEventListener("DOMContentLoaded", function () {
             showGraphError("Error loading price history", productId, modifiedUrl);
         }
     }
-
-        // Add this function
-    async function loadPriceDropPrediction(modifiedUrl) {
-        try {
-            showLoading(elements.priceDropLoader, "Loading price prediction...");
-            hideElement(elements.priceDropContainer);
-            hideElement(elements.priceDropError);
-            
-            const response = await fetch(`/get_price_drop_prediction?modified_url=${encodeURIComponent(modifiedUrl)}`);
-            const data = await response.json();
-            
-            if (data.status === "success" && data.price_drop_data) {
-                renderPriceDropPrediction(data.price_drop_data);
-            } else {
-                showPriceDropError(data.message || "No price drop prediction available");
-            }
-        } catch (error) {
-            console.error('Error loading price drop prediction:', error);
-            showPriceDropError("Error loading price drop prediction");
-        } finally {
-            hideLoading(elements.priceDropLoader);
-        }
-    }
-
-    function renderPriceDropPrediction(data) {
-        // Update percentage
-        elements.dropChancePercentage.textContent = `${data.chance_of_drop}%`;
-        
-        // Update recommendation text
-        elements.priceDropRecommendation.textContent = data.recommendation;
-        
-        // Update buy link
-        if (data.buy_link) {
-            elements.priceDropBuyLink.href = data.buy_link;
-        }
-        
-        // Update pointer rotation (if available)
-        if (data.pointer_rotation) {
-            elements.priceDropPointer.setAttribute('transform', `rotate(${data.pointer_rotation})`);
-        }
-        
-        showElement(elements.priceDropContainer);
-    }
-
-    function showPriceDropError(message) {
-        elements.priceDropErrorMessage.textContent = message;
-        showElement(elements.priceDropError);
-    }
-
-    // Add event listener for retry button
-    elements.retryPriceDropBtn.addEventListener('click', function() {
-        const productId = new URLSearchParams(window.location.search).get('id');
-        if (productId) {
-            fetch(`/get_product_details/${productId}`)
-                .then(res => res.json())
-                .then(data => {
-                    if (data.status === "success" && data.modified_url) {
-                        loadPriceDropPrediction(data.modified_url);
-                    }
-                });
-        }
-    });
-
-    // Update the loadProductDetails function to call loadPriceDropPrediction
-    async function loadProductDetails(productId) {
-        try {
-            showLoading(elements.productLoader, "Loading product details...");
-            
-            const response = await fetch(`/get_product_details/${productId}`);
-            const data = await response.json();
-            
-            if (data.status === "success") {
-                renderProduct(data.product);
-                if (data.modified_url) {
-                    loadGraphData(productId, data.modified_url);
-                    loadSimilarProducts(data.modified_url);
-                    loadPriceDropPrediction(data.modified_url); // Add this line
-                }
-            } else {
-                showProductError("Product not found");
-            }
-        } catch (error) {
-            console.error('Error loading product:', error);
-            showProductError("Error loading product details");
-        } finally {
-            hideLoading(elements.productLoader);
-        }
-    }
-
 
     // Similar products loading
     async function loadSimilarProducts(modifiedUrl) {
@@ -491,32 +389,38 @@ document.addEventListener("DOMContentLoaded", function () {
         return dates;
     }
 
-    // Price Alert Functionality - Consolidated Version
+    // Update the price alert event listener
     elements.priceAlertBtn.addEventListener("click", async function() {
-        const price = document.getElementById("alertPrice").value;
+        const priceInput = document.getElementById("desiredPrice");
+        const price = parseFloat(priceInput.value);
         const email = document.getElementById("alertEmail").value;
-        const msg = document.getElementById("alertMsg");
+        const msg = document.getElementById("priceAlertMessage");
         const emailLoader = document.getElementById("emailLoader");
-    
+
         // Clear previous messages and styles
         msg.textContent = "";
         msg.className = "alert-message";
         
         // Validate inputs
-        if (!price || !email || !productId) {
+        if (!price || !email) {
             showAlertMessage("Please fill all fields", "error");
             return;
         }
-    
+
+        if (isNaN(price) || price <= 0) {
+            showAlertMessage("Please enter a valid price", "error");
+            return;
+        }
+
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
             showAlertMessage("Please enter a valid email", "error");
             return;
         }
-    
+
         try {
             // Show loading state
-            emailLoader.style.display = "block";
+            emailLoader.style.display = "flex";
             elements.priceAlertBtn.disabled = true;
             
             const response = await fetch('/set_price_alert', {
@@ -524,7 +428,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
                     product_id: productId, 
-                    desired_price: parseFloat(price), 
+                    desired_price: price, 
                     email: email 
                 })
             });
@@ -537,7 +441,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 } else {
                     showAlertMessage(`Price alert #${data.alert_id} set successfully! You'll be notified when the price drops.`, "success");
                     // Clear the form on success
-                    document.getElementById("alertPrice").value = "";
+                    document.getElementById("desiredPrice").value = "";
                     document.getElementById("alertEmail").value = "";
                 }
             } else {
@@ -552,146 +456,113 @@ document.addEventListener("DOMContentLoaded", function () {
             elements.priceAlertBtn.disabled = false;
         }
     });
-
+    
     function showAlertMessage(message, type) {
-        const msg = document.getElementById("alertMsg");
+        const msg = document.getElementById("priceAlertMessage");
         msg.textContent = message;
         msg.className = `alert-message ${type}`;
+        msg.style.display = 'block';
         
         // Auto-hide success messages after 5 seconds
         if (type === "success") {
             setTimeout(() => {
                 msg.textContent = "";
                 msg.className = "alert-message";
+                msg.style.display = 'none';
             }, 5000);
         }
     }
 
     // Comparison Functionality
-    elements.compareButton.addEventListener("click", function() {
-        elements.compareModal.style.display = "block";
-    });
+    // Replace the comparison functionality in product_script.js
+elements.compareButton.addEventListener("click", function() {
+    elements.compareModal.style.display = "block";
+    generateUrlInputs(2); // Default to 2 products
+});
 
-    elements.closeModal.addEventListener("click", function() {
+elements.closeModal.addEventListener("click", function() {
+    elements.compareModal.style.display = "none";
+});
+
+window.addEventListener("click", function(event) {
+    if (event.target === elements.compareModal) {
         elements.compareModal.style.display = "none";
-    });
+    }
+});
 
-    window.addEventListener("click", function(event) {
-        if (event.target === elements.compareModal) {
-            elements.compareModal.style.display = "none";
-        }
-    });
+// Generate URL input fields based on selected count
+document.getElementById('compareCount').addEventListener('change', function() {
+    const count = parseInt(this.value);
+    generateUrlInputs(count);
+});
 
-    elements.similarProductsBtn.addEventListener("click", function() {
-        elements.compareModal.style.display = "none";
-        showLoading(loader);
-        
-        fetch('/compare')
-            .then(response => response.json())
-            .then(data => {
-                hideLoading(loader);
-                renderComparisonResults(data);
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-                hideLoading(loader);
-            });
-    });
+function generateUrlInputs(count) {
+    const urlInputs = document.getElementById('urlInputs');
+    urlInputs.innerHTML = '';
+    
+    for (let i = 1; i < count; i++) {
+        const div = document.createElement('div');
+        div.className = 'url-input-group';
+        div.innerHTML = `
+            <label for="compareUrl${i}">Product ${i+1} URL:</label>
+            <input type="text" id="compareUrl${i}" placeholder="Paste Amazon or Flipkart product URL">
+        `;
+        urlInputs.appendChild(div);
+    }
+}
 
-    elements.pasteUrlBtn.addEventListener("click", function() {
-        elements.urlInputContainer.style.display = "block";
-    });
-
-    elements.submitUrlBtn.addEventListener("click", function() {
-        const url = elements.productUrlInput.value.trim();
-        elements.urlError.textContent = "";
-        
+// Handle compare submission
+// Update the comparison submission in product_script.js
+document.getElementById('submitCompareBtn').addEventListener('click', function() {
+    const count = parseInt(document.getElementById('compareCount').value);
+    const urls = [];
+    const productId = new URLSearchParams(window.location.search).get('id');
+    
+    // Collect all URLs
+    for (let i = 1; i < count; i++) {
+        const url = document.getElementById(`compareUrl${i}`).value.trim();
         if (!url) {
-            elements.urlError.textContent = "Please enter a URL";
+            document.getElementById('urlError').textContent = `Please enter URL for Product ${i+1}`;
             return;
         }
-
-        if (!/https?:\/\/(www\.)?(flipkart\.com|amazon\.in)\/.*/.test(url)) {
-            elements.urlError.textContent = "Please enter a valid Amazon or Flipkart product URL";
-            return;
-        }
-
-        elements.compareModal.style.display = "none";
-        showLoading(loader);
-
-        fetch(`/get_product_details/${productId}`)
-            .then(res => res.json())
-            .then(currentProductData => {
-                if (currentProductData.status !== "success") throw new Error("Current product not found");
-
-                return fetch('/compare_with_url', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url: url })
-                });
-            })
-            .then(res => res.json())
-            .then(compareProductData => {
-                hideLoading(loader);
-                if (compareProductData.status !== "success") {
-                    throw new Error(compareProductData.message || "Failed to fetch comparison product");
-                }
-                renderUrlComparison(currentProductData.product, compareProductData.product);
-            })
-            .catch(error => {
-                hideLoading(loader);
-                elements.urlError.textContent = error.message || "Error occurred during comparison.";
-            });
-    });
-
-    function renderComparisonResults(data) {
-        elements.comparisonContainer.style.display = "none";
-        elements.comparisonTable.style.display = "block";
-        elements.comparisonTable.innerHTML = generateTable(data);
         
-        elements.resultsDiv.innerHTML = `
-            <div class="link-container">
-                <a href="${data.product_urls.amazon_link}" class="styled-link amazon-link" target="_blank">
-                    <i class="fas fa-shopping-cart"></i> Amazon: Go to Amazon
-                </a>
-                <a href="${data.product_urls.flipkart_link}" class="styled-link flipkart-link" target="_blank">
-                    <i class="fas fa-shopping-cart"></i> Flipkart: Go to Flipkart
-                </a>
-            </div>
-        `;
+        if (!/https?:\/\/(www\.)?(flipkart\.com|amazon\.in)\/.*/.test(url)) {
+            document.getElementById('urlError').textContent = `Please enter a valid Amazon or Flipkart URL for Product ${i+1}`;
+            return;
+        }
+        
+        urls.push(url);
     }
-
-    function renderUrlComparison(currentProduct, compareProduct) {
-        elements.comparisonContainer.style.display = "flex";
-        elements.comparisonContainer.innerHTML = `
-            <div class="comparison-table-wrapper">
-                <div class="comparison-card">
-                    <h3>Current Product</h3>
-                    ${renderProductTable(currentProduct)}
-                </div>
-                <div class="comparison-card">
-                    <h3>Comparison Product</h3>
-                    ${renderProductTable(compareProduct)}
-                </div>
-            </div>
-        `;
-    }
-
-    function renderProductTable(product) {
-        if (!product) return `<p>No data found.</p>`;
-        return `
-            <div class="product-image-container">
-                <img src="${product.imageUrl || product['Image URL'] || ''}" 
-                     alt="Product Image" class="product-table-image">
-            </div>
-            <table class="product-comparison-table">
-                <tr><td><strong>Name</strong></td><td>${product.name || product['Product Name'] || ''}</td></tr>
-                <tr><td><strong>Price</strong></td><td>${product.price || product['Price'] || ''}</td></tr>
-                <tr><td><strong>Rating</strong></td><td>${product.rating || product['Rating'] || ''}</td></tr>
-                <tr><td><strong>Buy Link</strong></td><td><a href="${product.buy_link || '#'}" target="_blank">Buy Now</a></td></tr>
-            </table>
-        `;
-    }
+    
+    document.getElementById('urlError').textContent = "";
+    elements.compareModal.style.display = "none";
+    showLoading(elements.loader);
+    
+    // Send URLs to backend for processing
+    fetch('/create_comparison', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            product_id: productId,
+            urls: urls
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideLoading(elements.loader);
+        if (data.status === "success") {
+            window.location.href = `/compare_page?id=${data.comparison_id}`;
+        } else {
+            throw new Error(data.message || "Failed to create comparison");
+        }
+    })
+    .catch(error => {
+        hideLoading(elements.loader);
+        document.getElementById('urlError').textContent = error.message || "Error occurred during comparison.";
+    });
+});
 
     // Scroll to top functionality
     window.addEventListener("scroll", function() {
@@ -722,4 +593,3 @@ function generateTable(data) {
     // Implementation would go here
     return '';
 }
-

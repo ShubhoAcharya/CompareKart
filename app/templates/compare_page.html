@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Comparison - CompareKart</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/product_styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <img src="../static/images/logo comparekart.jpg" alt="CompareKart Logo" class="logo-image">
+        </div>
+        <div class="search-container">
+            <input type="text" id="searchQuery" placeholder="Search for products, brands and more">
+            <button id="searchButton"><i class="fas fa-search"></i></button>
+        </div>
+        <div class="social-media">
+            <a href="https://www.facebook.com/profile.php?id=100071524550883" target="_blank" title="Facebook">
+                <i class="fab fa-facebook-f"></i>
+            </a>
+            <a href="https://twitter.com/ShubhojitB_arya" target="_blank" title="Twitter">
+                <i class="fa-brands fa-x-twitter"></i>
+            </a>
+            <a href="https://www.linkedin.com/in/shubhojit-bhattacharya-%F0%9F%87%AE%F0%9F%87%B3-960979219/" target="_blank" title="LinkedIn">
+                <i class="fab fa-linkedin-in"></i>
+            </a>
+            <a href="https://github.com/ShubhoAcharya/CompareKart" target="_blank" title="GitHub">
+                <i class="fab fa-github"></i>
+            </a>
+            <a href="https://www.instagram.com/shubhojit__bhattacharya/?hl=en" target="_blank" title="Instagram">
+                <i class="fab fa-instagram"></i>
+            </a>
+        </div>
+    </header>
+
+    <main class="comparison-page">
+        <div class="comparison-header">
+            <h2><i class="fas fa-balance-scale"></i> Product Comparison</h2>
+            <p>Compare features and prices across multiple products</p>
+        </div>
+
+        <div class="comparison-grid" id="comparisonGrid">
+            {% for product in products %}
+            <div class="comparison-card {% if product.best_value %}best-value{% endif %}" data-product-id="{{ product.id }}">
+                <button class="delete-compare-btn" onclick="replaceProduct('{{ comparison_id }}', '{{ product.id }}')">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="product-image-container">
+                    <img src="{{ product.image }}" alt="{{ product.name }}" class="product-table-image">
+                </div>
+                <h3>{{ product.name }}</h3>
+                <table class="comparison-table">
+                    <tr>
+                        <th>Price</th>
+                        <td class="price-cell">{{ product.price }}</td>
+                    </tr>
+                    <tr>
+                        <th>Rating</th>
+                        <td class="rating-cell">
+                            <span class="rating-stars">
+                                {% for i in range(1, 6) %}
+                                    {% if i <= product.rating|float|round %}
+                                        ★
+                                    {% else %}
+                                        ☆
+                                    {% endif %}
+                                {% endfor %}
+                            </span>
+                            {{ product.rating }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Description</th>
+                        <td>{{ product.description }}</td>
+                    </tr>
+                    <tr>
+                        <th>Delivery</th>
+                        <td>{{ product.delivery_time }}</td>
+                    </tr>
+                    <tr>
+                        <th>Action</th>
+                        <td><a href="{{ product.url }}" target="_blank" class="buy-button">Buy Now <i class="fas fa-external-link-alt"></i></a></td>
+                    </tr>
+                </table>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="add-more-container">
+            <button id="addMoreBtn" class="compare-button">
+                <i class="fas fa-plus"></i> Add More Products (Max 5)
+            </button>
+            <div id="addMoreContainer" style="display: none; margin-top: 20px;">
+                <input type="text" id="newProductUrl" placeholder="Enter new product URL">
+                <button id="submitNewProduct" class="compare-submit-btn">Add Product</button>
+                <p id="addMoreError" class="error-message"></p>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <p>&copy; <span id="currentYear"></span> CompareKart. All rights reserved.</p>
+            <div class="footer-links">
+                <a href="{{ url_for('main.privacy') }}">Privacy Policy</a>
+                <a href="{{ url_for('main.terms') }}">Terms of Service</a>
+                <a href="{{ url_for('main.about') }}">About Us</a>
+            </div>
+        </div>
+    </footer>
+
+    <button id="scrollToTop" title="Go to top">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <script src="{{ url_for('static', filename='js/product_script.js') }}"></script>
+    <script>
+
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+        function replaceProduct(comparisonId, productId) {
+            const newUrl = prompt("Enter new product URL to replace this one:");
+            if (!newUrl) return;
+            
+            if (!newUrl.match(/https?:\/\/(www\.)?(flipkart\.com|amazon\.in)\/.*/)) {
+                alert("Please enter a valid Amazon or Flipkart product URL");
+                return;
+            }
+            
+            fetch('/update_comparison', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    comparison_id: comparisonId,
+                    product_id: productId,
+                    new_url: newUrl
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === "success") {
+                    location.reload();
+                } else {
+                    alert(data.message || "Failed to update comparison");
+                }
+            })
+            .catch(error => {
+                alert("Error updating comparison");
+            });
+        }
+        
+        document.getElementById('addMoreBtn').addEventListener('click', function() {
+            const container = document.getElementById('addMoreContainer');
+            container.style.display = container.style.display === 'none' ? 'block' : 'none';
+        });
+        
+        document.getElementById('submitNewProduct').addEventListener('click', function() {
+            const newUrl = document.getElementById('newProductUrl').value.trim();
+            const comparisonId = "{{ comparison_id }}";
+            const currentCount = parseInt("{{ products|length|default(0) }}", 10);
+
+
+            if (currentCount >= 5) {
+                document.getElementById('addMoreError').textContent = "Maximum of 5 products allowed";
+                return;
+            }
+            
+            if (!newUrl.match(/https?:\/\/(www\.)?(flipkart\.com|amazon\.in)\/.*/)) {
+                document.getElementById('addMoreError').textContent = "Please enter a valid Amazon or Flipkart product URL";
+                return;
+            }
+            
+            fetch('/update_comparison', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    comparison_id: comparisonId,
+                    product_id: 0, // Indicates to add rather than replace
+                    new_url: newUrl
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === "success") {
+                    location.reload();
+                } else {
+                    document.getElementById('addMoreError').textContent = data.message || "Failed to add product";
+                }
+            })
+            .catch(error => {
+                document.getElementById('addMoreError').textContent = "Error adding product";
+            });
+        });
+    </script>
+</body>
+</html>
