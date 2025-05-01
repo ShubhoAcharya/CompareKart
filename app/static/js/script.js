@@ -174,49 +174,40 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
 // Category handling with smooth animations
-document.addEventListener('DOMContentLoaded', function() {
-    // Category click handler
-    document.querySelectorAll('.category-link').forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            const categoryId = this.getAttribute('data-category-id');
-            const categoryName = this.querySelector('.category-name').textContent;
-            loadCategoryProducts(categoryId, categoryName);
-            
-            // Update active state
-            document.querySelectorAll('.category-link').forEach(link => {
-                link.classList.remove('active');
-            });
-            this.classList.add('active');
-        });
-    });
-
-    // Load first category by default
-    const firstCategory = document.querySelector('.category-link');
-    if (firstCategory) {
-        const categoryId = firstCategory.getAttribute('data-category-id');
-        const categoryName = firstCategory.querySelector('.category-name').textContent;
-        firstCategory.classList.add('active');
+document.querySelectorAll('.category-link').forEach(link => {
+    link.addEventListener('click', function(e) {
+        e.preventDefault();
+        const categoryId = this.getAttribute('data-category-id');
+        const categoryName = this.querySelector('.category-name').textContent;
+        
+        // Show the section when a category is clicked
+        document.getElementById('categoryProducts').style.display = 'block';
         loadCategoryProducts(categoryId, categoryName);
-    }
+        
+        // Update active state
+        document.querySelectorAll('.category-link').forEach(link => {
+            link.classList.remove('active');
+        });
+        this.classList.add('active');
+    });
 });
 
 async function loadCategoryProducts(categoryId, categoryName) {
     const productsGrid = document.getElementById('productsGrid');
     const loader = document.getElementById('categoryLoader');
+    const section = document.getElementById('categoryProducts');
     const header = document.querySelector('.category-products-section .modern-section-header h2');
     
     try {
+        // Show section if hidden
+        section.style.display = 'block';
+        
         // Show loader with smooth transition
         productsGrid.style.opacity = '0.5';
         productsGrid.style.pointerEvents = 'none';
         loader.style.display = 'flex';
-        
-        // Scroll to section smoothly
-        document.getElementById('categoryProducts').scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-        });
+        loader.style.opacity = '1';
+        loader.style.pointerEvents = 'auto';
 
         // Update header with category name
         header.innerHTML = `
