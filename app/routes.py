@@ -64,7 +64,7 @@ def clean_price(price_str):
 def update_product_data_periodically():
     while True:
         try:
-            with engine.connect() as conn:
+            with engine.begin() as conn:  # This should auto-commit
                 # Check database connection first
                 try:
                     conn.execute(text("SELECT 1"))
@@ -73,24 +73,24 @@ def update_product_data_periodically():
                     time.sleep(60)
                     continue
 
-                # Get products that need updating (older than 12 hours)
+                # Get products that need updating
                 products = conn.execute(text("""
                     SELECT id, original_url FROM products 
                     WHERE last_updated < NOW() - INTERVAL '12 hours' 
                     OR last_updated IS NULL
                     ORDER BY last_updated ASC NULLS FIRST
-                    LIMIT 10  -- Process 10 at a time to avoid timeout
+                    LIMIT 10
                 """)).fetchall()
 
                 if not products:
-                    time.sleep(3600)  # Wait 1 hour if no products need updating
+                    time.sleep(3600)
                     continue
                 
                 for product in products:
                     try:
                         print(f"\nUpdating product ID: {product.id}")
                         
-                        # Determine which scraper to use based on URL
+                        # Scrape product data
                         if "flipkart.com" in product.original_url:
                             product_data = scrape_flipkart_product(product.original_url)
                         elif "amazon.in" in product.original_url:
@@ -102,23 +102,29 @@ def update_product_data_periodically():
                             print(f"❌ Failed to scrape product {product.id}")
                             continue
                         
-                        # Clean and prepare data
+                        # Prepare data with fallbacks
                         cleaned_price = clean_price(product_data.get("Price"))
                         cleaned_rating = clean_rating(product_data.get("Rating"))
-                        description = product_data.get("Description", "")
-                        delivery_time = product_data.get("Delivery Time", "")
+                        description = product_data.get("Description", "No description available")[:2000]
+                        delivery_time = product_data.get("Delivery Time", "Delivery time not specified")[:255]
                         
-                        # Update database with all scraped data
-                        conn.execute(text("""
+                        # Debug print before update
+                        print(f"Updating product {product.id} with:")
+                        print(f"Description: {description[:100]}...")
+                        print(f"Delivery Time: {delivery_time}")
+                        
+                        # Execute update
+                        result = conn.execute(text("""
                             UPDATE products
                             SET 
                                 name = COALESCE(:name, name),
                                 price = COALESCE(:price, price),
                                 rating = COALESCE(:rating, rating),
-                                description = COALESCE(:description, description),
-                                delivery_time = COALESCE(:delivery_time, delivery_time),
+                                description = :description,
+                                delivery_time = :delivery_time,
                                 last_updated = NOW()
                             WHERE id = :id
+                            RETURNING description, delivery_time
                         """), {
                             "id": product.id,
                             "name": product_data.get("Product Name"),
@@ -128,17 +134,20 @@ def update_product_data_periodically():
                             "delivery_time": delivery_time
                         })
                         
+                        # Verify the update
+                        updated = result.fetchone()
                         print(f"✅ Updated product ID: {product.id}")
-                        
-                        # Check price alerts (existing code remains the same)
-                        # ...
+                        print(f"Stored description: {updated.description[:100]}...")
+                        print(f"Stored delivery_time: {updated.delivery_time}")
                         
                     except Exception as e:
                         log_error(f"Error updating product {product.id}", e)
+                        # Add explicit rollback in case of error
+                        conn.rollback()
                     
-                    time.sleep(10)  # Short delay between products to avoid rate limiting
+                    time.sleep(10)
                 
-                time.sleep(600)  # Wait 10 minutes between batches
+                time.sleep(600)
 
         except Exception as e:
             log_error("Error in update loop", e)
@@ -777,8 +786,8 @@ def update_comparison():
             else:
                 result = conn.execute(
                     text("""
-                        INSERT INTO products (original_url, name, price, rating, image_link, created_at, last_updated)
-                        VALUES (:url, :name, :price, :rating, :image, NOW(), NOW())
+                        INSERT INTO products (original_url, name, price, rating, image_link, description, delivery_time, created_at, last_updated)
+                        VALUES (:url, :name, :price, :rating, :image, :description, :delivery_time, NOW(), NOW())
                         RETURNING id
                     """),
                     {
@@ -786,7 +795,9 @@ def update_comparison():
                         "name": product.get("Product Name"),
                         "price": clean_price(product.get("Price")),
                         "rating": product.get("Rating"),
-                        "image": product.get("Image URL")
+                        "image": product.get("Image URL"),
+                        "description": product.get("Description", ""),
+                        "delivery_time": product.get("Delivery Time", "")
                     }
                 ).fetchone()
                 new_product_id = result[0]
@@ -898,3 +909,47 @@ def get_products_by_category(category_id):
         return jsonify({"status": "error", "message": "Internal server error"}), 500
     
 
+@main.route('/test_db_write')
+def test_db_write():
+    try:
+        with engine.begin() as conn:
+            # Test writing to description and delivery_time
+            test_data = {
+                "description": "This is a test description",
+                "delivery_time": "Test delivery time"
+            }
+            
+            # Update first product
+            conn.execute(text("""
+                UPDATE products 
+                SET description = :desc, 
+                    delivery_time = :delivery,
+                    last_updated = NOW()
+                WHERE id = 1
+                RETURNING description, delivery_time
+            """), {
+                "desc": test_data["description"],
+                "delivery": test_data["delivery_time"]
+            })
+            
+            # Verify update
+            result = conn.execute(text("""
+                SELECT description, delivery_time 
+                FROM products 
+                WHERE id = 1
+            """)).fetchone()
+            
+            return jsonify({
+                "status": "success",
+                "written_data": test_data,
+                "stored_data": {
+                    "description": result.description,
+                    "delivery_time": result.delivery_time
+                }
+            })
+            
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500

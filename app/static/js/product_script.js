@@ -418,6 +418,15 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
+        // Get current price
+        const currentPriceText = document.querySelector(".product-price").textContent;
+        const currentPrice = parseFloat(currentPriceText.replace(/[^0-9.]/g, ''));
+        
+        if (price >= currentPrice) {
+            showAlertMessage(`Please enter a price lower than current price (₹${currentPrice.toLocaleString('en-IN')})`, "error");
+            return;
+        }
+
         try {
             // Show loading state
             emailLoader.style.display = "flex";
@@ -439,7 +448,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (data.warning) {
                     showAlertMessage(`Alert #${data.alert_id} set successfully! (Email notification failed)`, "warning");
                 } else {
-                    showAlertMessage(`Price alert #${data.alert_id} set successfully! You'll be notified when the price drops.`, "success");
+                    showAlertMessage(`Price alert #${data.alert_id} set successfully! You'll be notified when the price drops below ₹${price.toLocaleString('en-IN')}.`, "success");
                     // Clear the form on success
                     document.getElementById("desiredPrice").value = "";
                     document.getElementById("alertEmail").value = "";

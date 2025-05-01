@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="../static/images/cart_4628369.png">
     <title>Product Comparison - CompareKart</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/product_styles.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
@@ -12,9 +13,11 @@
         <div class="logo-container">
             <img src="../static/images/logo comparekart.jpg" alt="CompareKart Logo" class="logo-image">
         </div>
+        <!-- Add this inside the <header> section of compare_page.html -->
         <div class="search-container">
-            <input type="text" id="searchQuery" placeholder="Search for products, brands and more">
+            <input type="text" id="searchQuery" placeholder="Search for products to compare...">
             <button id="searchButton"><i class="fas fa-search"></i></button>
+            <div id="searchResults" class="search-results" style="display: none;"></div>
         </div>
         <div class="social-media">
             <a href="https://www.facebook.com/profile.php?id=100071524550883" target="_blank" title="Facebook">
@@ -197,6 +200,8 @@
                 document.getElementById('addMoreError').textContent = "Error adding product";
             });
         });
+
+        
     </script>
 </body>
 </html>
