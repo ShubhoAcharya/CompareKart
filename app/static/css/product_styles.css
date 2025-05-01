@@ -1145,6 +1145,7 @@ footer {
 }
 
 /* 🆚 Updated Compare Modal Styles */
+/* Compact Compare Modal Styles */
 .modal {
     display: none;
     position: fixed;
@@ -1153,34 +1154,125 @@ footer {
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(5px);
-    transition: all 0.3s ease;
-}
-
-.modal.show {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(3px);
 }
 
 .modal-content {
-    background-color: white;
-    margin: 0 auto;
-    padding: 2.5rem;
-    border-radius: 16px;
+    background: white;
+    margin: 5% auto;
+    padding: 1.5rem;
+    border-radius: 12px;
     width: 90%;
-    max-width: 600px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    max-width: 450px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
     position: relative;
-    transform: translateY(20px);
-    transition: transform 0.3s ease;
+}
+
+.modal-header {
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.modal-header h3 {
+    font-size: 1.3rem;
+    color: var(--primary);
+    margin: 0;
+}
+
+.compare-card {
+    background: #f8fafc;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border: 1px solid #e2e8f0;
+}
+
+.compare-select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.url-input-group {
+    margin-bottom: 0.8rem;
+}
+
+.url-input-group label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text);
+    margin-bottom: 0.3rem;
+}
+
+.url-input-group input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.85rem;
+}
+
+.compare-submit-btn {
+    width: 100%;
+    padding: 0.7rem;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 0.5rem;
+}
+
+.compare-submit-btn:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+}
+
+.error-message {
+    font-size: 0.8rem;
+    color: #d32f2f;
+    margin-top: 0.5rem;
+}
+
+/* Add these styles to your existing CSS */
+.modal-content {
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.compare-select, 
+.url-input-group input {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+}
+
+.url-input-group {
+    margin-bottom: 1rem;
+}
+
+.url-input-group label {
+    font-size: 0.85rem;
+    margin-bottom: 0.3rem;
+}
+
+.compare-submit-btn {
+    padding: 0.8rem;
+    font-size: 1rem;
+}
+
+.compare-options {
+    gap: 1rem;
+}
+
+#urlInputContainer p {
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
 }
 
 .modal.show .modal-content {

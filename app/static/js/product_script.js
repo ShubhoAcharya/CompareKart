@@ -514,7 +514,9 @@ function generateUrlInputs(count) {
         div.className = 'url-input-group';
         div.innerHTML = `
             <label for="compareUrl${i}">Product ${i+1} URL:</label>
-            <input type="text" id="compareUrl${i}" placeholder="Paste Amazon or Flipkart product URL">
+            <input type="text" id="compareUrl${i}" 
+                   placeholder="Paste product URL" 
+                   style="width: 100%; box-sizing: border-box;">
         `;
         urlInputs.appendChild(div);
     }
