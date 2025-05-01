@@ -13,7 +13,6 @@
         <div class="logo-container">
             <img src="../static/images/logo comparekart.jpg" alt="CompareKart Logo" class="logo-image">
         </div>
-        <!-- Add this inside the <header> section of compare_page.html -->
         <div class="search-container">
             <input type="text" id="searchQuery" placeholder="Search for products to compare...">
             <button id="searchButton"><i class="fas fa-search"></i></button>
@@ -47,7 +46,7 @@
         <div class="comparison-grid" id="comparisonGrid">
             {% for product in products %}
             <div class="comparison-card {% if product.best_value %}best-value{% endif %}" data-product-id="{{ product.id }}">
-                <button class="delete-compare-btn" onclick="replaceProduct('{{ comparison_id }}', '{{ product.id }}')">
+                <button class="delete-compare-btn" onclick="removeProduct('{{ comparison_id }}', '{{ product.id }}')">
                     <i class="fas fa-times"></i>
                 </button>
                 <div class="product-image-container">
@@ -63,7 +62,7 @@
                         <th>Rating</th>
                         <td class="rating-cell">
                             <span class="rating-stars">
-                                {% for i in range(1, 5) %}
+                                {% for i in range(1, 6) %}
                                     {% if i <= product.rating|float|round %}
                                         ★
                                     {% else %}
@@ -91,13 +90,30 @@
             {% endfor %}
         </div>
 
-        <div class="add-more-container">
-            <button id="addMoreBtn" class="compare-button">
-                <i class="fas fa-plus"></i> Add More Products (Max 4)
+        <div class="comparison-tools">
+            <button id="exportComparison" class="tool-button">
+                <i class="fas fa-download"></i> Export
             </button>
-            <div id="addMoreContainer" style="display: none; margin-top: 20px;">
-                <input type="text" id="newProductUrl" placeholder="Enter new product URL">
-                <button id="submitNewProduct" class="compare-submit-btn">Add Product</button>
+            <button id="shareComparison" class="tool-button">
+                <i class="fas fa-share-alt"></i> Share
+            </button>
+            <button id="highlightDifferences" class="tool-button">
+                <i class="fas fa-highlighter"></i> Highlight Differences
+            </button>
+        </div>
+
+        <div class="add-more-container">
+            <button id="addMoreBtn" class="add-more-btn">
+                <i class="fas fa-plus"></i> Add More Products (Max 5)
+            </button>
+            <div id="addMoreContainer" style="display: none;">
+                <div class="url-input-group">
+                    <label for="newProductUrl">Product URL:</label>
+                    <input type="text" id="newProductUrl" placeholder="Enter new product URL">
+                </div>
+                <button id="submitNewProduct" class="submit-new-product">
+                    <i class="fas fa-plus-circle"></i> Add Product
+                </button>
                 <p id="addMoreError" class="error-message"></p>
             </div>
         </div>
@@ -118,90 +134,341 @@
         <i class="fas fa-arrow-up"></i>
     </button>
 
-    <script src="{{ url_for('static', filename='js/product_script.js') }}"></script>
     <script>
-
-        document.getElementById('currentYear').textContent = new Date().getFullYear();
-
-        function replaceProduct(comparisonId, productId) {
-            const newUrl = prompt("Enter new product URL to replace this one:");
-            if (!newUrl) return;
+        document.addEventListener("DOMContentLoaded", function() {
+            // Set current year
+            document.getElementById('currentYear').textContent = new Date().getFullYear();
             
-            if (!newUrl.match(/https?:\/\/(www\.)?(flipkart\.com|amazon\.in)\/.*/)) {
-                alert("Please enter a valid Amazon or Flipkart product URL");
-                return;
-            }
-            
-            fetch('/update_comparison', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    comparison_id: comparisonId,
-                    product_id: productId,
-                    new_url: newUrl
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === "success") {
-                    location.reload();
-                } else {
-                    alert(data.message || "Failed to update comparison");
-                }
-            })
-            .catch(error => {
-                alert("Error updating comparison");
-            });
-        }
-        
-        document.getElementById('addMoreBtn').addEventListener('click', function() {
-            const container = document.getElementById('addMoreContainer');
-            container.style.display = container.style.display === 'none' ? 'block' : 'none';
-        });
-        
-        document.getElementById('submitNewProduct').addEventListener('click', function() {
-            const newUrl = document.getElementById('newProductUrl').value.trim();
+            // Initialize variables
             const comparisonId = "{{ comparison_id }}";
-            const currentCount = parseInt("{{ products|length|default(0) }}", 10);
-
-
-            if (currentCount >= 4) {
-                document.getElementById('addMoreError').textContent = "Maximum of 5 products allowed";
-                return;
-            }
+            const products = JSON.parse('{{ products | tojson | safe }}');
+            const comparisonGrid = document.getElementById('comparisonGrid');
+            const addMoreBtn = document.getElementById('addMoreBtn');
+            const addMoreContainer = document.getElementById('addMoreContainer');
+            const newProductUrl = document.getElementById('newProductUrl');
+            const submitNewProduct = document.getElementById('submitNewProduct');
+            const addMoreError = document.getElementById('addMoreError');
+            const highlightDifferencesBtn = document.getElementById('highlightDifferences');
+            const exportComparisonBtn = document.getElementById('exportComparison');
+            const shareComparisonBtn = document.getElementById('shareComparison');
+            const searchButton = document.getElementById('searchButton');
+            const searchQuery = document.getElementById('searchQuery');
+            const searchResults = document.getElementById('searchResults');
             
-            if (!newUrl.match(/https?:\/\/(www\.)?(flipkart\.com|amazon\.in)\/.*/)) {
-                document.getElementById('addMoreError').textContent = "Please enter a valid Amazon or Flipkart product URL";
-                return;
-            }
-            
-            fetch('/update_comparison', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    comparison_id: comparisonId,
-                    product_id: 0, // Indicates to add rather than replace
-                    new_url: newUrl
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === "success") {
-                    location.reload();
-                } else {
-                    document.getElementById('addMoreError').textContent = data.message || "Failed to add product";
+            // Highlight best value product
+            function highlightBestValue() {
+                // Remove any existing best value highlights
+                document.querySelectorAll('.best-value').forEach(el => {
+                    el.classList.remove('best-value');
+                });
+                
+                // Find the product with lowest price
+                let lowestPrice = Infinity;
+                let bestValueProduct = null;
+                
+                products.forEach(product => {
+                    const priceStr = product.price.replace(/[^0-9.]/g, '');
+                    const price = parseFloat(priceStr);
+                    
+                    if (price < lowestPrice) {
+                        lowestPrice = price;
+                        bestValueProduct = product;
+                    }
+                });
+                
+                // Add best value class to the card
+                if (bestValueProduct) {
+                    const productCard = document.querySelector(`.comparison-card[data-product-id="${bestValueProduct.id}"]`);
+                    if (productCard) {
+                        productCard.classList.add('best-value');
+                    }
                 }
-            })
-            .catch(error => {
-                document.getElementById('addMoreError').textContent = "Error adding product";
-            });
-        });
+            }
+            
+            // Highlight differences between products
+            function highlightDifferences() {
+                const cards = document.querySelectorAll('.comparison-card');
+                cards.forEach(card => card.classList.toggle('highlight-differences'));
+                
+                // Update button text
+                const isHighlighted = cards[0].classList.contains('highlight-differences');
+                highlightDifferencesBtn.innerHTML = isHighlighted ? 
+                    '<i class="fas fa-highlighter"></i> Remove Highlights' : 
+                    '<i class="fas fa-highlighter"></i> Highlight Differences';
+                
+                // Highlight lowest and highest prices
+                if (isHighlighted) {
+                    let prices = [];
+                    document.querySelectorAll('.price-cell').forEach(cell => {
+                        const priceStr = cell.textContent.replace(/[^0-9.]/g, '');
+                        const price = parseFloat(priceStr);
+                        prices.push({price, cell});
+                    });
+                    
+                    if (prices.length > 0) {
+                        prices.sort((a, b) => a.price - b.price);
+                        
+                        // Highlight lowest price
+                        prices[0].cell.classList.add('lowest');
+                        
+                        // Highlight highest price (if more than one product)
+                        if (prices.length > 1) {
+                            prices[prices.length - 1].cell.classList.add('highest');
+                        }
+                    }
+                }
+            }
+            
+            // Add to comparison function
+            function addToComparison(comparisonId, productId) {
+                const currentCount = document.querySelectorAll('.comparison-card').length;
+                
+                if (currentCount >= 5) {
+                    alert("Maximum of 5 products allowed in comparison");
+                    return;
+                }
+                
+                // Show loading indicator
+                const loader = document.createElement('div');
+                loader.className = 'spinner';
+                document.getElementById('comparisonGrid').appendChild(loader);
+                
+                fetch('/update_comparison', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        comparison_id: comparisonId,
+                        product_id: 0, // Indicates adding new product
+                        new_url: `/product_display?id=${productId}`
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.status === "success") {
+                        window.location.reload();
+                    } else {
+                        loader.remove();
+                        alert(data.message || "Failed to add product to comparison");
+                    }
+                })
+                .catch(error => {
+                    loader.remove();
+                    alert("Error adding product to comparison: " + error.message);
+                });
+            }
 
-        
+            // Remove product function
+            function removeProduct(comparisonId, productId) {
+                if (!confirm("Are you sure you want to remove this product from comparison?")) {
+                    return;
+                }
+                
+                const card = document.querySelector(`.comparison-card[data-product-id="${productId}"]`);
+                if (card) {
+                    const originalContent = card.innerHTML;
+                    card.innerHTML = '<div class="spinner">Removing...</div>';
+                    
+                    fetch('/update_comparison', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            comparison_id: comparisonId,
+                            product_id: productId,
+                            new_url: null // Indicates removal
+                        })
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.status === "success") {
+                            window.location.reload();
+                        } else {
+                            card.innerHTML = originalContent;
+                            alert(data.message || "Failed to remove product");
+                        }
+                    })
+                    .catch(error => {
+                        card.innerHTML = originalContent;
+                        alert("Error removing product: " + error.message);
+                    });
+                }
+            }
+            
+            // Export comparison as CSV
+            function exportComparison() {
+                window.open(`/export_comparison?id=${comparisonId}`, '_blank');
+            }
+            
+            // Share comparison link
+            function shareComparison() {
+                const url = window.location.href;
+                
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'Product Comparison - CompareKart',
+                        text: 'Check out this product comparison I created on CompareKart',
+                        url: url
+                    })
+                    .catch(err => {
+                        copyToClipboard(url);
+                    });
+                } else {
+                    copyToClipboard(url);
+                }
+            }
+            
+            // Helper function to copy to clipboard
+            function copyToClipboard(text) {
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('Comparison link copied to clipboard!');
+                });
+            }
+            
+            // Search functionality
+            function handleSearch() {
+                const query = searchQuery.value.trim();
+                if (!query) {
+                    showSearchError("Please enter a search term");
+                    return;
+                }
+
+                searchResults.innerHTML = '<div class="spinner"></div>';
+                searchResults.style.display = 'block';
+                
+                fetch('/search', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ query: query })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showSearchResults([data.product]);
+                    } else {
+                        showSearchError(data.message || "No matching products found");
+                    }
+                })
+                .catch(error => {
+                    showSearchError("Error occurred during search");
+                });
+            }
+
+            function showSearchResults(products) {
+                let html = '';
+                products.forEach(product => {
+                    html += `
+                        <div class="search-result-item" data-id="${product.id}">
+                            <img src="${product.imageUrl || '../static/images/not_found_image.png'}" 
+                                alt="${product.name}" class="search-result-image">
+                            <div class="search-result-info">
+                                <h4>${product.name}</h4>
+                                <p>${product.price}</p>
+                                <button class="add-to-compare-btn" 
+                                        onclick="addToComparison('${comparisonId}', ${product.id})">
+                                    <i class="fas fa-plus"></i> Add to Comparison
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                searchResults.innerHTML = html;
+            }
+
+            function showSearchError(message) {
+                searchResults.innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p>${message}</p>
+                    </div>
+                `;
+            }
+            
+            // Add new product to comparison
+            function addNewProduct() {
+                const newUrl = newProductUrl.value.trim();
+                const currentCount = document.querySelectorAll('.comparison-card').length;
+                
+                addMoreError.textContent = '';
+                
+                if (currentCount >= 5) {
+                    addMoreError.textContent = "Maximum of 5 products allowed";
+                    return;
+                }
+                
+                if (!newUrl.match(/https?:\/\/(www\.)?(flipkart\.com|amazon\.in)\/.*/)) {
+                    addMoreError.textContent = "Please enter a valid Amazon or Flipkart product URL";
+                    return;
+                }
+                
+                // Show loading state
+                const originalContent = addMoreContainer.innerHTML;
+                addMoreContainer.innerHTML = '<div class="spinner"></div>';
+                
+                fetch('/update_comparison', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        comparison_id: comparisonId,
+                        product_id: 0, // Indicates to add rather than replace
+                        new_url: newUrl
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "success") {
+                        location.reload();
+                    } else {
+                        addMoreContainer.innerHTML = originalContent;
+                        addMoreError.textContent = data.message || "Failed to add product";
+                    }
+                })
+                .catch(error => {
+                    addMoreContainer.innerHTML = originalContent;
+                    addMoreError.textContent = "Error adding product";
+                });
+            }
+            
+            // Event listeners
+            addMoreBtn.addEventListener('click', () => {
+                addMoreContainer.style.display = addMoreContainer.style.display === 'none' ? 'block' : 'none';
+            });
+
+            submitNewProduct.addEventListener('click', addNewProduct);
+            highlightDifferencesBtn.addEventListener('click', highlightDifferences);
+            exportComparisonBtn.addEventListener('click', exportComparison);
+            shareComparisonBtn.addEventListener('click', shareComparison);
+            searchButton.addEventListener('click', handleSearch);
+            searchQuery.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') handleSearch();
+            });
+            
+            // Close search results when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.search-container')) {
+                    searchResults.style.display = 'none';
+                }
+            });
+            
+            // Initialize page
+            highlightBestValue();
+        });
     </script>
 </body>
 </html>

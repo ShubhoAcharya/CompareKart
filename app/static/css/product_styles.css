@@ -1980,3 +1980,528 @@ footer {
 .feature-lowlight {
     opacity: 0.7;
 }
+
+
+/* Comparison tools */
+.comparison-tools {
+    display: flex;
+    gap: 10px;
+    margin: 20px 0;
+    justify-content: center;
+}
+
+.tool-button {
+    padding: 8px 15px;
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.tool-button:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-2px);
+}
+
+/* Difference highlighting */
+.highlight-differences .price-cell,
+.highlight-differences .rating-cell {
+    font-weight: bold;
+    background-color: rgba(255, 255, 0, 0.1);
+}
+
+.highlight-differences .price-cell.lowest {
+    color: green;
+    font-weight: bold;
+}
+
+.highlight-differences .price-cell.highest {
+    color: red;
+    font-weight: bold;
+}
+
+
+/* --- COMPARISON PAGE IMPROVEMENTS --- */
+
+.comparison-page {
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.comparison-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid rgba(79, 70, 229, 0.1);
+}
+
+.comparison-header h2 {
+    font-size: 2.2rem;
+    margin-bottom: 1rem;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.comparison-header p {
+    color: var(--light-text);
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.comparison-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.comparison-card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    box-shadow: var(--card-shadow);
+    padding: 2rem;
+    position: relative;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid rgba(79, 70, 229, 0.1);
+}
+
+.comparison-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+}
+
+.product-image-container {
+    width: 100%;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.product-table-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    padding: 1rem;
+}
+
+.comparison-card h3 {
+    font-size: 1.3rem;
+    color: var(--text);
+    margin-bottom: 1.5rem;
+    line-height: 1.4;
+    min-height: 3.5rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.comparison-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-top: 1.5rem;
+}
+
+.comparison-table th {
+    background-color: rgba(79, 70, 229, 0.05);
+    color: var(--primary);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 2px solid rgba(79, 70, 229, 0.1);
+}
+
+.comparison-table td {
+    padding: 15px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    color: var(--text);
+    vertical-align: top;
+}
+
+.comparison-table tr:last-child td {
+    border-bottom: none;
+}
+
+.price-cell {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--primary-dark);
+}
+
+.rating-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.rating-stars {
+    color: #ffb300;
+    font-size: 1rem;
+}
+
+.delete-compare-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: #ff4444;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.delete-compare-btn:hover {
+    background: #cc0000;
+    transform: scale(1.1);
+}
+
+.add-more-container {
+    text-align: center;
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(79, 70, 229, 0.1);
+}
+
+.add-more-btn {
+    padding: 12px 24px;
+    background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+    color: white;
+    border: none;
+    border-radius: 30px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    box-shadow: 0 4px 15px rgba(79, 70, 229, 0.2);
+}
+
+.add-more-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
+}
+
+.comparison-tools {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin: 2rem 0;
+    flex-wrap: wrap;
+}
+
+.tool-button {
+    padding: 0.8rem 1.5rem;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.tool-button:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.tool-button i {
+    font-size: 1rem;
+}
+
+/* Highlighting styles */
+.best-value {
+    position: relative;
+    overflow: hidden;
+    border: 2px solid var(--primary);
+}
+
+.best-value::after {
+    content: "Best Value";
+    position: absolute;
+    top: 15px;
+    right: -30px;
+    background: var(--primary);
+    color: white;
+    padding: 3px 30px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transform: rotate(45deg);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.feature-highlight {
+    background-color: rgba(168, 85, 247, 0.1);
+    font-weight: 600;
+}
+
+.feature-lowlight {
+    opacity: 0.7;
+}
+
+.highlight-differences .price-cell,
+.highlight-differences .rating-cell {
+    font-weight: bold;
+    background-color: rgba(255, 255, 0, 0.1);
+}
+
+.highlight-differences .price-cell.lowest {
+    color: #10b981;
+    font-weight: bold;
+}
+
+.highlight-differences .price-cell.highest {
+    color: #ef4444;
+    font-weight: bold;
+}
+
+/* Add more products form */
+.add-more-container {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    margin-top: 2rem;
+}
+
+.url-input-group {
+    margin-bottom: 1.5rem;
+    text-align: left;
+}
+
+.url-input-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text);
+}
+
+.url-input-group input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.url-input-group input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+    outline: none;
+}
+
+.submit-new-product {
+    width: 100%;
+    padding: 12px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.submit-new-product:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .comparison-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .comparison-card {
+        padding: 1.5rem;
+    }
+    
+    .comparison-header h2 {
+        font-size: 1.8rem;
+    }
+    
+    .comparison-tools {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .tool-button {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .comparison-page {
+        padding: 1rem;
+    }
+    
+    .comparison-header h2 {
+        font-size: 1.5rem;
+    }
+    
+    .price-cell {
+        font-size: 1.1rem;
+    }
+}
+
+
+.search-result-item {
+    display: flex;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    align-items: center;
+}
+
+.search-result-image {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    margin-right: 15px;
+}
+
+.search-result-info {
+    flex: 1;
+}
+
+.search-result-info h4 {
+    margin: 0 0 5px 0;
+    font-size: 0.9rem;
+    color: var(--text);
+}
+
+.search-result-info p {
+    margin: 0 0 8px 0;
+    font-size: 0.9rem;
+    color: var(--primary);
+}
+
+.add-to-compare-btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.add-to-compare-btn:hover {
+    background: var(--primary-dark);
+}
+
+
+/* Loading spinner styles */
+.spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top: 4px solid var(--primary);
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Search result styles */
+.search-result-item {
+    display: flex;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    align-items: center;
+    transition: background-color 0.2s;
+}
+
+.search-result-item:hover {
+    background-color: #f9f9f9;
+}
+
+.search-result-image {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    margin-right: 15px;
+    border-radius: 4px;
+}
+
+.search-result-info {
+    flex: 1;
+}
+
+.search-result-info h4 {
+    margin: 0 0 5px 0;
+    font-size: 0.9rem;
+    color: var(--text);
+}
+
+.search-result-info p {
+    margin: 0 0 8px 0;
+    font-size: 0.9rem;
+    color: var(--primary);
+    font-weight: bold;
+}
+
+.add-to-compare-btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background-color 0.2s;
+}
+
+.add-to-compare-btn:hover {
+    background: var(--primary-dark);
+}
+
+.add-to-compare-btn i {
+    font-size: 0.8rem;
+}

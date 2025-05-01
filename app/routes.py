@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
+import csv
+import io
 import re
-from flask import Blueprint, redirect, render_template, request, jsonify, url_for
+from flask import Blueprint, make_response, redirect, render_template, request, jsonify, url_for
 import pandas as pd
 from sqlalchemy import create_engine, text
 import json
@@ -12,8 +14,7 @@ from datetime import datetime, timedelta
 from flask_mail import Mail, Message
 from flask import current_app
 
-from app.Amazon_search_product import search_amazon
-from app.Flipkart_search_product import search_flipkart_product
+
 from app.tempCodeRunnerFile import scrape_amazon_product_selenium
 from app.webscraping_Flipkart import scrape_flipkart_product
 
@@ -570,7 +571,7 @@ def remove_price_alert(alert_id):
         log_error(f"Failed to remove price alert {alert_id}", e)
         return render_template('alert_removed.html', error="Failed to remove alert"), 500
 
-# Add to routes.py
+
 # Update the /create_comparison route in routes.py
 @main.route('/create_comparison', methods=['POST'])
 def create_comparison():
@@ -762,83 +763,163 @@ def update_comparison():
         product_id = data.get('product_id')
         new_url = data.get('new_url')
         
-        if not all([comparison_id, product_id, new_url]):
-            return jsonify({'status': 'error', 'message': 'Missing data'}), 400
-        
-        if not re.match(r'https?://(www\.)?(flipkart\.com|amazon\.in)/', new_url):
-            return jsonify({'status': 'error', 'message': 'Invalid URL'}), 400
+        if not comparison_id:
+            return jsonify({'status': 'error', 'message': 'Missing comparison ID'}), 400
         
         with engine.begin() as conn:
-            # Scrape new product
-            if "flipkart.com" in new_url:
-                product = scrape_flipkart_product(new_url) or {}
-            elif "amazon.in" in new_url:
-                product = scrape_amazon_product_selenium(new_url) or {}
-            
-            # Insert or update product
-            existing = conn.execute(
-                text("SELECT id FROM products WHERE original_url = :url"),
-                {"url": new_url}
+            # Verify comparison exists
+            comparison = conn.execute(
+                text("SELECT product_ids FROM comparisons WHERE id = :id"),
+                {"id": comparison_id}
             ).fetchone()
             
-            if existing:
-                new_product_id = existing.id
-            else:
-                result = conn.execute(
-                    text("""
-                        INSERT INTO products (original_url, name, price, rating, image_link, description, delivery_time, created_at, last_updated)
-                        VALUES (:url, :name, :price, :rating, :image, :description, :delivery_time, NOW(), NOW())
-                        RETURNING id
-                    """),
-                    {
-                        "url": new_url,
-                        "name": product.get("Product Name"),
-                        "price": clean_price(product.get("Price")),
-                        "rating": product.get("Rating"),
-                        "image": product.get("Image URL"),
-                        "description": product.get("Description", ""),
-                        "delivery_time": product.get("Delivery Time", "")
-                    }
+            if not comparison:
+                return jsonify({'status': 'error', 'message': 'Comparison not found'}), 404
+                
+            current_products = comparison[0]
+            
+            # Handle removal case (when new_url is None)
+            if new_url is None:
+                if product_id is None:
+                    return jsonify({'status': 'error', 'message': 'Product ID required for removal'}), 400
+                
+                new_products = [pid for pid in current_products if pid != product_id]
+                if len(new_products) < 2:
+                    return jsonify({'status': 'error', 'message': 'Comparison must have at least 2 products'}), 400
+                
+                conn.execute(
+                    text("UPDATE comparisons SET product_ids = :pids WHERE id = :id"),
+                    {"pids": new_products, "id": comparison_id}
+                )
+                return jsonify({'status': 'success'})
+            
+            # Handle adding new product
+            if product_id == 0:
+                if len(current_products) >= 5:
+                    return jsonify({'status': 'error', 'message': 'Maximum of 5 products allowed'}), 400
+                
+                if not new_url:
+                    return jsonify({'status': 'error', 'message': 'URL required to add product'}), 400
+                    
+                # Check if product exists
+                existing = conn.execute(
+                    text("SELECT id FROM products WHERE original_url = :url"),
+                    {"url": new_url}
                 ).fetchone()
-                new_product_id = result[0]
+                
+                if existing:
+                    new_product_id = existing.id
+                else:
+                    # Scrape new product
+                    if "flipkart.com" in new_url:
+                        product_data = scrape_flipkart_product(new_url) or {}
+                    elif "amazon.in" in new_url:
+                        product_data = scrape_amazon_product_selenium(new_url) or {}
+                    else:
+                        return jsonify({'status': 'error', 'message': 'Invalid URL'}), 400
+                    
+                    # Insert new product
+                    result = conn.execute(
+                        text("""
+                            INSERT INTO products (
+                                original_url, name, price, rating, 
+                                image_link, description, delivery_time,
+                                created_at, last_updated
+                            )
+                            VALUES (
+                                :url, :name, :price, :rating,
+                                :image, :description, :delivery_time,
+                                NOW(), NOW()
+                            )
+                            RETURNING id
+                        """),
+                        {
+                            "url": new_url,
+                            "name": product_data.get("Product Name", "Unknown Product"),
+                            "price": clean_price(product_data.get("Price")),
+                            "rating": product_data.get("Rating"),
+                            "image": product_data.get("Image URL", ""),
+                            "description": product_data.get("Description", ""),
+                            "delivery_time": product_data.get("Delivery Time", "")
+                        }
+                    ).fetchone()
+                    new_product_id = result[0]
+                
+                # Update comparison
+                new_products = current_products + [new_product_id]
+                conn.execute(
+                    text("UPDATE comparisons SET product_ids = :product_ids WHERE id = :id"),
+                    {"product_ids": new_products, "id": comparison_id}
+                )
+                return jsonify({'status': 'success'})
             
-            # Update comparison
-            conn.execute(
-                text("""
-                    UPDATE comparisons
-                    SET product_ids = array_replace(product_ids, :old_id, :new_id)
-                    WHERE id = :comparison_id
-                """),
-                {
-                    "old_id": product_id,
-                    "new_id": new_product_id,
-                    "comparison_id": comparison_id
-                }
-            )
-            
-            # Get updated product data
-            updated_product = conn.execute(
-                text("""
-                    SELECT id, name, price, rating, image_link
-                    FROM products WHERE id = :id
-                """),
-                {"id": new_product_id}
-            ).fetchone()
-            
-            return jsonify({
-                'status': 'success',
-                'product': {
-                    'id': updated_product.id,
-                    'name': updated_product.name,
-                    'price': f"₹{int(updated_product.price):,}" if updated_product.price else "N/A",
-                    'rating': str(updated_product.rating) if updated_product.rating else "N/A",
-                    'image': updated_product.image_link or ""
-                }
-            })
-            
+            # Handle replacing product
+            else:
+                if product_id is None:
+                    return jsonify({'status': 'error', 'message': 'Product ID required for replacement'}), 400
+                
+                if product_id not in current_products:
+                    return jsonify({'status': 'error', 'message': 'Product not in comparison'}), 400
+                
+                if not new_url:
+                    return jsonify({'status': 'error', 'message': 'URL required to replace product'}), 400
+                
+                # Check if new product exists
+                existing = conn.execute(
+                    text("SELECT id FROM products WHERE original_url = :url"),
+                    {"url": new_url}
+                ).fetchone()
+                
+                if existing:
+                    new_product_id = existing.id
+                else:
+                    # Scrape new product
+                    if "flipkart.com" in new_url:
+                        product_data = scrape_flipkart_product(new_url) or {}
+                    elif "amazon.in" in new_url:
+                        product_data = scrape_amazon_product_selenium(new_url) or {}
+                    else:
+                        return jsonify({'status': 'error', 'message': 'Invalid URL'}), 400
+                    
+                    # Insert new product
+                    result = conn.execute(
+                        text("""
+                            INSERT INTO products (
+                                original_url, name, price, rating, 
+                                image_link, description, delivery_time,
+                                created_at, last_updated
+                            )
+                            VALUES (
+                                :url, :name, :price, :rating,
+                                :image, :description, :delivery_time,
+                                NOW(), NOW()
+                            )
+                            RETURNING id
+                        """),
+                        {
+                            "url": new_url,
+                            "name": product_data.get("Product Name", "Unknown Product"),
+                            "price": clean_price(product_data.get("Price")),
+                            "rating": product_data.get("Rating"),
+                            "image": product_data.get("Image URL", ""),
+                            "description": product_data.get("Description", ""),
+                            "delivery_time": product_data.get("Delivery Time", "")
+                        }
+                    ).fetchone()
+                    new_product_id = result[0]
+                
+                # Update comparison
+                new_products = [new_product_id if pid == product_id else pid for pid in current_products]
+                conn.execute(
+                    text("UPDATE comparisons SET product_ids = :product_ids WHERE id = :id"),
+                    {"product_ids": new_products, "id": comparison_id}
+                )
+                return jsonify({'status': 'success'})
+                
     except Exception as e:
         log_error("Failed to update comparison", e)
         return jsonify({'status': 'error', 'message': 'Failed to update comparison'}), 500
+    
     
 @main.route('/get_similar_products', methods=['GET'])
 def get_similar_products():
@@ -953,3 +1034,54 @@ def test_db_write():
             "status": "error",
             "message": str(e)
         }), 500
+    
+@main.route('/export_comparison')
+def export_comparison():
+    comparison_id = request.args.get('id')
+    if not comparison_id:
+        return jsonify({'status': 'error', 'message': 'Missing comparison ID'}), 400
+    
+    try:
+        with engine.connect() as conn:
+            comparison = conn.execute(
+                text("SELECT product_ids FROM comparisons WHERE id = :id"),
+                {"id": comparison_id}
+            ).fetchone()
+            
+            if not comparison:
+                return jsonify({'status': 'error', 'message': 'Comparison not found'}), 404
+            
+            products = []
+            for product_id in comparison[0]:
+                product = conn.execute(
+                    text("""
+                        SELECT name, price, rating, description, delivery_time, original_url
+                        FROM products WHERE id = :id
+                    """),
+                    {"id": product_id}
+                ).fetchone()
+                
+                if product:
+                    products.append({
+                        'name': product.name,
+                        'price': f"₹{int(product.price):,}" if product.price else "N/A",
+                        'rating': str(product.rating) if product.rating else "N/A",
+                        'description': product.description,
+                        'delivery_time': product.delivery_time,
+                        'url': product.original_url
+                    })
+            
+            # Create CSV
+            output = io.StringIO()
+            writer = csv.DictWriter(output, fieldnames=products[0].keys())
+            writer.writeheader()
+            writer.writerows(products)
+            
+            response = make_response(output.getvalue())
+            response.headers['Content-Disposition'] = f'attachment; filename=comparison_{comparison_id}.csv'
+            response.headers['Content-type'] = 'text/csv'
+            return response
+            
+    except Exception as e:
+        log_error(f"Failed to export comparison {comparison_id}", e)
+        return jsonify({'status': 'error', 'message': 'Export failed'}), 500
