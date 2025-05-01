@@ -172,17 +172,38 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 });
 
+document.addEventListener('click', function(event) {
+    const categoryProducts = document.getElementById('categoryProducts');
+    const isCategoryLink = event.target.closest('.category-link');
+    
+    // If clicked outside category links and products section is visible
+    if (!isCategoryLink && categoryProducts.style.display === 'block') {
+        categoryProducts.style.display = 'none';
+        
+        // Remove active class from all category links
+        document.querySelectorAll('.category-link').forEach(link => {
+            link.classList.remove('active');
+        });
+    }
+});
 
 // Category handling with smooth animations
 document.querySelectorAll('.category-link').forEach(link => {
     link.addEventListener('click', function(e) {
         e.preventDefault();
+        e.stopPropagation(); // Prevent event from bubbling to document
+        
         const categoryId = this.getAttribute('data-category-id');
         const categoryName = this.querySelector('.category-name').textContent;
+        const categoryProducts = document.getElementById('categoryProducts');
         
-        // Show the section when a category is clicked
-        document.getElementById('categoryProducts').style.display = 'block';
-        loadCategoryProducts(categoryId, categoryName);
+        // Toggle display (show if hidden, hide if shown)
+        if (categoryProducts.style.display === 'none' || !categoryProducts.style.display) {
+            categoryProducts.style.display = 'block';
+            loadCategoryProducts(categoryId, categoryName);
+        } else {
+            categoryProducts.style.display = 'none';
+        }
         
         // Update active state
         document.querySelectorAll('.category-link').forEach(link => {
@@ -191,6 +212,10 @@ document.querySelectorAll('.category-link').forEach(link => {
         this.classList.add('active');
     });
 });
+
+
+
+// Function to load products by category with smooth animations
 
 async function loadCategoryProducts(categoryId, categoryName) {
     const productsGrid = document.getElementById('productsGrid');

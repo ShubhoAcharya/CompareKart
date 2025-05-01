@@ -1144,7 +1144,7 @@ footer {
     to { transform: rotate(360deg); }
 }
 
-/* Modal Styles */
+/* 🆚 Updated Compare Modal Styles */
 .modal {
     display: none;
     position: fixed;
@@ -1153,98 +1153,280 @@ footer {
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0,0,0,0.5);
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    transition: all 0.3s ease;
+}
+
+.modal.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 .modal-content {
-    background-color: #fefefe;
-    margin: 10% auto;
-    padding: 2rem;
-    border-radius: 12px;
-    width: 80%;
-    max-width: 500px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    background-color: white;
+    margin: 0 auto;
+    padding: 2.5rem;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
     position: relative;
+    transform: translateY(20px);
+    transition: transform 0.3s ease;
+}
+
+.modal.show .modal-content {
+    transform: translateY(0);
+}
+
+.modal-content h3 {
+    font-size: 1.8rem;
+    color: var(--primary-dark);
+    margin-bottom: 1.5rem;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+.modal-content h3 i {
+    color: var(--accent);
 }
 
 .close {
     position: absolute;
-    right: 1rem;
-    top: 1rem;
-    font-size: 1.5rem;
+    right: 1.5rem;
+    top: 1.5rem;
+    font-size: 1.8rem;
     font-weight: bold;
     cursor: pointer;
-    color: #666;
+    color: var(--light-text);
+    transition: all 0.3s ease;
+    background: none;
+    border: none;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
 }
 
 .close:hover {
-    color: #333;
+    color: var(--primary);
+    background: rgba(79, 70, 229, 0.1);
+    transform: rotate(90deg);
 }
 
 .compare-options {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
-    margin: 1.5rem 0;
+    gap: 1.5rem;
+    margin: 2rem 0;
 }
 
 .compare-option-btn {
-    padding: 1rem;
+    padding: 1.2rem;
     border: none;
-    border-radius: 8px;
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    color: #333;
-    font-size: 1rem;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e0e7ff 100%);
+    color: var(--text);
+    font-size: 1.1rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .compare-option-btn:hover {
-    background: linear-gradient(135deg, #e0e7ff 0%, #a5b4fc 100%);
-    transform: translateY(-2px);
+    background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(79, 70, 229, 0.15);
 }
 
 .compare-option-btn i {
-    font-size: 1.2rem;
+    font-size: 1.4rem;
+    color: var(--primary);
 }
 
+/* 🔗 Updated URL Input Container */
 #urlInputContainer {
     margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-#productUrlInput {
-    width: 100%;
-    padding: 0.8rem;
-    border: 1px solid #ddd;
-    border-radius: 8px;
+#urlInputContainer p {
     font-size: 1rem;
-    margin-bottom: 1rem;
+    color: var(--light-text);
+    margin-bottom: 1.5rem;
+    text-align: center;
 }
 
-#submitUrlBtn {
-    padding: 0.8rem 1.5rem;
-    background-color: #4f46e5;
+.compare-select {
+    width: 100%;
+    padding: 0.9rem 1.2rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+    background-color: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1rem;
+}
+
+.compare-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+    outline: none;
+}
+
+.url-input-group {
+    margin-bottom: 1.5rem;
+}
+
+.url-input-group label {
+    display: block;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+    color: var(--text);
+    font-size: 0.95rem;
+}
+
+.url-input-group input {
+    width: 100%;
+    padding: 0.9rem 1.2rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.url-input-group input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+    outline: none;
+}
+
+.url-input-group input::placeholder {
+    color: #9ca3af;
+}
+
+/* 🚀 Updated Submit Button */
+.compare-submit-btn {
+    width: 100%;
+    padding: 1rem;
+    margin-top: 1rem;
+    background: linear-gradient(to right, var(--primary), var(--accent));
     color: white;
     border: none;
-    border-radius: 8px;
-    font-size: 1rem;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    font-weight: 600;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
 }
 
-#submitUrlBtn:hover {
-    background-color: #4338ca;
+.compare-submit-btn:hover {
+    background: linear-gradient(to right, var(--primary-dark), var(--accent));
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(79, 70, 229, 0.4);
+}
+
+.compare-submit-btn:disabled {
+    background: #d1d5db;
+    transform: none;
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+.compare-submit-btn i {
+    transition: transform 0.3s ease;
+}
+
+.compare-submit-btn:hover i {
+    transform: translateX(3px);
 }
 
 .error-message {
-    color: #d32f2f;
-    margin-top: 0.5rem;
+    color: #ef4444;
     font-size: 0.9rem;
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    animation: shake 0.5s ease;
+}
+
+.error-message i {
+    font-size: 1rem;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-3px); }
+    40%, 80% { transform: translateX(3px); }
+}
+
+/* 📱 Responsive Adjustments for Modal */
+@media (max-width: 768px) {
+    .modal-content {
+        padding: 1.5rem;
+        width: 95%;
+    }
+    
+    .modal-content h3 {
+        font-size: 1.5rem;
+    }
+    
+    .compare-option-btn {
+        padding: 1rem;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .modal-content {
+        padding: 1.5rem 1rem;
+    }
+    
+    .modal-content h3 {
+        font-size: 1.3rem;
+    }
+    
+    .compare-select, 
+    .url-input-group input {
+        padding: 0.8rem 1rem;
+    }
+    
+    .compare-submit-btn {
+        padding: 0.9rem;
+        font-size: 1rem;
+    }
 }
 
 /* Comparison Table Styles */

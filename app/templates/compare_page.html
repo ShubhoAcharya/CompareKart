@@ -63,7 +63,7 @@
                         <th>Rating</th>
                         <td class="rating-cell">
                             <span class="rating-stars">
-                                {% for i in range(1, 6) %}
+                                {% for i in range(1, 5) %}
                                     {% if i <= product.rating|float|round %}
                                         ★
                                     {% else %}
@@ -93,7 +93,7 @@
 
         <div class="add-more-container">
             <button id="addMoreBtn" class="compare-button">
-                <i class="fas fa-plus"></i> Add More Products (Max 5)
+                <i class="fas fa-plus"></i> Add More Products (Max 4)
             </button>
             <div id="addMoreContainer" style="display: none; margin-top: 20px;">
                 <input type="text" id="newProductUrl" placeholder="Enter new product URL">
@@ -167,7 +167,7 @@
             const currentCount = parseInt("{{ products|length|default(0) }}", 10);
 
 
-            if (currentCount >= 5) {
+            if (currentCount >= 4) {
                 document.getElementById('addMoreError').textContent = "Maximum of 5 products allowed";
                 return;
             }
