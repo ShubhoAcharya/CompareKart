@@ -13,6 +13,7 @@ import time
 from datetime import datetime, timedelta
 from flask_mail import Mail, Message
 from flask import current_app
+from app import mail
 
 
 from app.tempCodeRunnerFile import scrape_amazon_product_selenium
@@ -501,12 +502,9 @@ def set_price_alert():
                 alert_id = result[0]
 
             # Send confirmation email
-            email_success = True
             try:
-                mail = Mail(current_app)
                 msg = Message(
                     f"Price Alert Set for {product.name}",
-                    sender=("CompareKart", "alerts@comparekart.com"),
                     recipients=[email]
                 )
                 msg.html = render_template(
@@ -521,16 +519,18 @@ def set_price_alert():
                     support_email="support@comparekart.com"
                 )
                 mail.send(msg)
+                return jsonify({
+                    'status': 'success',
+                    'alert_id': alert_id,
+                    'message': 'Price alert set successfully!'
+                })
             except Exception as e:
                 log_error("Failed to send alert email", e)
-                email_success = False
-
-            return jsonify({
-                'status': 'success',
-                'warning': not email_success,
-                'alert_id': alert_id,
-                'message': 'Price alert set successfully!'
-            })
+                return jsonify({
+                    'status': 'warning',
+                    'alert_id': alert_id,
+                    'message': 'Alert set but email notification failed'
+                })
 
     except ValueError:
         return jsonify({'status': 'error', 'message': 'Invalid price format'}), 400
