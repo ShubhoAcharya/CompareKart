@@ -604,3 +604,4 @@ function generateTable(data) {
     // Implementation would go here
     return '';
 }
+

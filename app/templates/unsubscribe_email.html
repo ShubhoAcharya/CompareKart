@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alert Removed - CompareKart</title>
+    <title>Unsubscribe Confirmation - CompareKart</title>
     <style type="text/css">
         /* Same base styles as price_alert_notification.html */
         body {
@@ -51,33 +51,13 @@
             font-size: 16px;
         }
         
-        .confirmation-message {
-            background-color: #f0fdf4;
-            border-left: 4px solid #10b981;
+        .unsubscribe-message {
+            background-color: #eff6ff;
+            border-left: 4px solid #3b82f6;
             padding: 16px;
             margin: 16px 0;
             border-radius: 4px;
             font-size: 15px;
-        }
-        
-        .cta-container {
-            margin: 24px 0;
-            text-align: center;
-        }
-        
-        .cta-button {
-            display: inline-block;
-            background-color: #cdccd8;
-            color: white;
-            text-decoration: none;
-            padding: 12px 24px;
-            border-radius: 6px;
-            font-weight: 600;
-            transition: background-color 0.2s;
-        }
-        
-        .cta-button:hover {
-            background-color: #4338ca;
         }
         
         /* Footer styles same as price_alert_notification.html */
@@ -120,22 +100,19 @@
     <div class="email-container">
         <div class="email-header">
             <div class="logo">CompareKart</div>
-            <h1 class="header-title">Alert Successfully Removed</h1>
+            <h1 class="header-title">Unsubscribe Confirmation</h1>
         </div>
         
         <div class="email-content">
             <p class="greeting">Hello,</p>
             
-            <div class="confirmation-message">
-                <p>Your price alert for <strong>{{ product_name }}</strong> has been successfully removed.</p>
-                <p>You will no longer receive notifications when the price of this product changes.</p>
-            </div>
-            
-            <div class="cta-container">
-                <a href="{{ product_url }}" class="cta-button">View Product</a>
+            <div class="unsubscribe-message">
+                <p>You've been successfully unsubscribed from all price alerts on CompareKart.</p>
+                <p>We've removed {{ alert_count }} active alert(s) associated with your email address.</p>
             </div>
             
             <p>If you didn't request this change or have any questions, please reply to this email.</p>
+            <p>We're sorry to see you go!</p>
             <p>Best regards,<br>The CompareKart Team</p>
         </div>
         

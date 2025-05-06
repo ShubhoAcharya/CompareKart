@@ -3,139 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Price Alert Confirmation - CompareKart</title>
+    <title>Price Drop Alert - CompareKart</title>
     <style type="text/css">
-        /* Modern CSS Reset */
-        * {
+        body {
+            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f7fafc;
+            color: #2d3748;
         }
         
-        /* Base Styles */
-        body {
-            background-color: #f8fafc;
-            color: #334155;
-            line-height: 1.6;
-            padding: 20px 0;
-        }
-        
-        /* Email Container */
         .email-container {
             max-width: 600px;
             margin: 0 auto;
-            background: white;
-            border-radius: 12px;
+            background-color: #ffffff;
+            border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         
-        /* Header */
         .email-header {
-            background: #ffffff;
-            padding: 32px 20px;
+            background-color: #4f46e5;
+            color: white;
+            padding: 24px;
             text-align: center;
-            position: relative;
-            border-bottom: 1px solid #e2e8f0;
         }
         
         .logo {
-            font-size: 1.8rem;
+            font-size: 24px;
             font-weight: bold;
-            background: linear-gradient(to right, #4f46e5, #14b8a6);
-            background-clip: text;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            display: inline-block;
-            margin-bottom: 8px;
+            margin-bottom: 16px;
         }
         
         .header-title {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 8px;
-            letter-spacing: -0.5px;
-            color: #1e293b;
+            margin: 0;
+            font-size: 22px;
+            font-weight: 600;
         }
         
         .header-subtitle {
+            margin: 8px 0 0;
+            opacity: 0.9;
             font-size: 16px;
-            color: #64748b;
         }
         
-        /* Content */
         .email-content {
-            padding: 32px;
+            padding: 24px;
         }
         
         .greeting {
-            font-size: 18px;
-            margin-bottom: 24px;
-            color: #1e293b;
+            margin: 0 0 16px;
+            font-size: 16px;
         }
         
-        /* Product Card */
+        .price-drop-badge {
+            background-color: #ef4444;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 16px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .price-drop-message {
+            background-color: #fef2f2;
+            border-left: 4px solid #ef4444;
+            padding: 16px;
+            margin: 16px 0;
+            border-radius: 4px;
+            font-size: 15px;
+        }
+        
         .product-card {
+            display: flex;
             border: 1px solid #e2e8f0;
-            border-radius: 10px;
+            border-radius: 8px;
             overflow: hidden;
-            margin: 24px 0;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        
-        .product-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
+            margin: 16px 0;
         }
         
         .product-image-container {
-            height: 180px;
-            background: #f8fafc;
+            width: 120px;
+            background-color: #f8fafc;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            padding: 16px;
         }
         
         .product-image {
-            max-height: 100%;
             max-width: 100%;
+            max-height: 120px;
             object-fit: contain;
         }
         
         .product-details {
-            padding: 20px;
+            flex: 1;
+            padding: 16px;
         }
         
         .product-name {
+            margin: 0 0 12px;
             font-size: 18px;
             font-weight: 600;
-            color: #1e293b;
-            margin-bottom: 16px;
         }
         
         .price-container {
             display: flex;
-            justify-content: space-between;
-            margin-bottom: 16px;
+            gap: 16px;
+            margin-top: 12px;
         }
         
         .price-box {
             flex: 1;
             padding: 12px;
-            border-radius: 8px;
+            border-radius: 6px;
             text-align: center;
         }
         
         .current-price-box {
-            background: #f1f5f9;
-            margin-right: 8px;
+            background-color: #f0fdf4;
+            border: 1px solid #bbf7d0;
         }
         
         .alert-price-box {
-            background: #ecfdf5;
-            margin-left: 8px;
+            background-color: #eff6ff;
+            border: 1px solid #bfdbfe;
         }
         
         .price-label {
@@ -145,105 +146,74 @@
         }
         
         .price-value {
-            font-size: 20px;
-            font-weight: 700;
+            font-weight: bold;
+            font-size: 18px;
         }
         
         .current-price {
-            color: #1e293b;
+            color: #16a34a;
         }
         
         .alert-price {
-            color: #10b981;
+            color: #2563eb;
         }
         
-        /* Alert Status */
-        .alert-status {
-            display: inline-flex;
-            align-items: center;
-            background: #f0f9ff;
-            color: #0369a1;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 600;
-            margin-top: 12px;
-        }
-        
-        .alert-icon {
-            margin-right: 8px;
-            font-size: 16px;
-        }
-        
-        /* CTA Button */
         .cta-container {
+            margin: 24px 0;
             text-align: center;
-            margin: 28px 0;
         }
         
         .cta-button {
             display: inline-block;
-            background: linear-gradient(to right, #14b8a6, #4f46e5);
-            color: white !important;
+            background-color: #c1bfe9;
+            color: white;
             text-decoration: none;
-            padding: 14px 32px;
-            border-radius: 8px;
+            padding: 12px 24px;
+            border-radius: 6px;
             font-weight: 600;
-            font-size: 16px;
-            box-shadow: 0 4px 12px rgba(20, 184, 166, 0.25);
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: background-color 0.2s;
         }
         
         .cta-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(20, 184, 166, 0.3);
-            color: white !important;
+            background-color: #4338ca;
         }
         
-        /* Alert Management */
         .alert-management {
             margin: 24px 0;
-            text-align: center;
-            border-top: 1px solid #e2e8f0;
-            padding-top: 20px;
-        }
-        
-        .alert-management p {
+            padding: 16px;
+            background-color: #f8fafc;
+            border-radius: 6px;
             font-size: 14px;
-            color: #64748b;
-            margin-bottom: 12px;
+            text-align: center;
         }
         
         .alert-management a {
-            color: #ef4444;
-            font-size: 14px;
+            color: #4f46e5;
             text-decoration: none;
-            font-weight: 600;
+            font-weight: 500;
+            margin: 0 8px;
+            transition: color 0.2s;
         }
         
         .alert-management a:hover {
+            color: #4338ca;
             text-decoration: underline;
         }
         
         .unsubscribe-link {
-            color: #64748b;
-            font-size: 12px;
-            margin-top: 8px;
-            display: block;
+            color: #ef4444 !important;
         }
         
-        /* Footer */
         .email-footer {
             padding: 24px;
+            background-color: #f1f5f9;
             text-align: center;
-            background: #f8fafc;
-            border-top: 1px solid #e2e8f0;
+            font-size: 14px;
         }
         
         .footer-text {
+            margin: 8px 0;
             color: #64748b;
-            font-size: 14px;
-            margin-bottom: 16px;
         }
         
         .social-links {
@@ -251,49 +221,21 @@
         }
         
         .social-link {
-            display: inline-block;
-            margin: 0 8px;
-            color: #64748b;
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-        
-        .social-link:hover {
             color: #4f46e5;
+            text-decoration: none;
+            margin: 0 8px;
+            font-weight: 500;
         }
         
         .legal-links {
-            margin-top: 16px;
+            margin: 16px 0;
         }
         
         .legal-link {
             color: #64748b;
             text-decoration: none;
-            font-size: 12px;
             margin: 0 8px;
-        }
-        
-        .legal-link:hover {
-            text-decoration: underline;
-        }
-        
-        /* Responsive */
-        @media screen and (max-width: 480px) {
-            .email-content {
-                padding: 24px;
-            }
-            
-            .price-container {
-                flex-direction: column;
-            }
-            
-            .price-box {
-                margin: 8px 0 !important;
-            }
-            
-            .product-image-container {
-                height: 150px;
-            }
+            font-size: 13px;
         }
     </style>
 </head>
@@ -301,13 +243,18 @@
     <div class="email-container">
         <div class="email-header">
             <div class="logo">CompareKart</div>
-            <h1 class="header-title">Price Alert Confirmed!</h1>
-            <p class="header-subtitle">We'll notify you when the price drops</p>
+            <h1 class="header-title">Price Drop Alert!</h1>
+            <p class="header-subtitle">Your desired price has been reached</p>
         </div>
         
         <div class="email-content">
+            <div class="price-drop-badge">PRICE DROP!</div>
+            
             <p class="greeting">Hello there,</p>
-            <p>We've successfully created your price alert for the following product:</p>
+            
+            <div class="price-drop-message">
+                <p>The price of <strong>{{ product_name }}</strong> has dropped below your alert price!</p>
+            </div>
             
             <div class="product-card">
                 <div class="product-image-container">
@@ -330,27 +277,20 @@
                             <div class="price-value alert-price">{{ alert_price }}</div>
                         </div>
                     </div>
-                    
-                    <div class="alert-status">
-                        <span class="alert-icon">🔔</span>
-                        <span>Alert Active</span>
-                    </div>
                 </div>
             </div>
             
-            <p>You'll receive an email notification as soon as the price reaches your target of {{ alert_price }} or below.</p>
-            
             <div class="cta-container">
-                <a href="{{ product_url }}" class="cta-button">View Product on CompareKart</a>
+                <a href="{{ product_url }}" class="cta-button">Buy Now at This Price</a>
             </div>
             
             <div class="alert-management">
-                <p>To remove this alert, click the link below:</p>
+                <p>To stop receiving alerts for this product, click the link below:</p>
                 <a href="{{ remove_alert_url }}">Remove this price alert</a>
                 <a href="{{ unsubscribe_url }}" class="unsubscribe-link">Unsubscribe from all alerts</a>
             </div>
             
-            <p>If you have any questions about your alert, simply reply to this email.</p>
+            <p>If you have any questions, simply reply to this email.</p>
             <p>Happy shopping!<br>The CompareKart Team</p>
         </div>
         

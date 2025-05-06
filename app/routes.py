@@ -16,6 +16,10 @@ from flask import current_app
 from app import mail
 
 
+
+from app.price_alert_checker import check_price_alert_immediately
+
+
 from app.tempCodeRunnerFile import scrape_amazon_product_selenium
 from app.webscraping_Flipkart import scrape_flipkart_product
 
@@ -63,6 +67,11 @@ def clean_price(price_str):
         return 0.0
 
 # Update the update_product_data_periodically function in routes.py
+# At the top of routes.py with other imports
+from app.price_alert_checker import check_price_alert_immediately
+
+# ... rest of your imports ...
+
 def update_product_data_periodically():
     while True:
         try:
@@ -141,6 +150,9 @@ def update_product_data_periodically():
                         print(f"✅ Updated product ID: {product.id}")
                         print(f"Stored description: {updated.description[:100]}...")
                         print(f"Stored delivery_time: {updated.delivery_time}")
+
+                        # Check price alerts immediately after successful update
+                        check_price_alert_immediately(product.id)
                         
                     except Exception as e:
                         log_error(f"Error updating product {product.id}", e)
@@ -415,6 +427,8 @@ def get_graph_data():
         log_error("Error in get_graph_data", e)
         return jsonify({'status': 'error', 'message': 'Error fetching graph data'}), 500
 
+
+# Update the set_price_alert route
 @main.route('/set_price_alert', methods=['POST'])
 def set_price_alert():
     try:
@@ -515,8 +529,8 @@ def set_price_alert():
                     product_image=product.image_link if product.image_link else '',
                     product_url=f"{current_app.config['BASE_URL']}/product_display?id={product_id}",
                     remove_alert_url=f"{current_app.config['BASE_URL']}/remove_price_alert/{alert_id}",
-                    year=datetime.now().year,
-                    support_email="support@comparekart.com"
+                    unsubscribe_url=f"{current_app.config['BASE_URL']}/unsubscribe?email={email}",
+                    year=datetime.now().year
                 )
                 mail.send(msg)
                 return jsonify({
@@ -537,18 +551,19 @@ def set_price_alert():
     except Exception as e:
         log_error("Failed to set price alert", e)
         return jsonify({'status': 'error', 'message': 'Failed to set alert'}), 500
-    
-@main.route('/remove_price_alert/<int:alert_id>', methods=['GET'])
+
+# Update the remove_price_alert route
+@main.route('/remove_price_alert/<int:alert_id>', methods=['GET', 'POST'])
 def remove_price_alert(alert_id):
     try:
         with engine.begin() as conn:
+            # Get alert details before updating
             result = conn.execute(
                 text("""
-                    UPDATE price_alerts 
-                    SET is_active = FALSE, 
-                        updated_at = NOW()
-                    WHERE id = :id
-                    RETURNING email, product_id
+                    SELECT a.email, p.name, p.id as product_id 
+                    FROM price_alerts a
+                    JOIN products p ON a.product_id = p.id
+                    WHERE a.id = :id
                 """),
                 {'id': alert_id}
             ).fetchone()
@@ -556,21 +571,112 @@ def remove_price_alert(alert_id):
             if not result:
                 return render_template('alert_removed.html', error="Alert not found"), 404
 
-            product = conn.execute(
-                text("SELECT name FROM products WHERE id = :id"),
-                {'id': result[1]}
-            ).fetchone()
+            # Mark as inactive
+            conn.execute(
+                text("""
+                    UPDATE price_alerts
+                    SET is_active = FALSE,
+                        updated_at = NOW()
+                    WHERE id = :id
+                """),
+                {'id': alert_id}
+            )
 
+            # Send confirmation email
+            try:
+                msg = Message(
+                    f"Price Alert Removed: {result.name}",
+                    recipients=[result.email]
+                )
+                msg.html = render_template(
+                    'alert_removed_email.html',
+                    product_name=result.name,
+                    product_url=f"{current_app.config['BASE_URL']}/product_display?id={result.product_id}",
+                    year=datetime.now().year
+                )
+                mail.send(msg)
+            except Exception as e:
+                current_app.logger.error(f"Failed to send alert removal email: {str(e)}")
+
+            # Return response
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({
+                    'status': 'success',
+                    'message': 'Alert removed successfully'
+                })
+            
             return render_template(
                 'alert_removed.html',
-                product_name=product[0] if product else 'your product',
-                email=result[0]
+                product_name=result.name,
+                email=result.email,
+                success=True
             )
 
     except Exception as e:
-        log_error(f"Failed to remove price alert {alert_id}", e)
+        current_app.logger.error(f"Failed to remove price alert {alert_id}: {str(e)}")
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({
+                'status': 'error',
+                'message': 'Failed to remove alert'
+            }), 500
         return render_template('alert_removed.html', error="Failed to remove alert"), 500
 
+@main.route('/unsubscribe', methods=['GET'])
+def unsubscribe():
+    email = request.args.get('email')
+    if not email:
+        return render_template('unsubscribe_email.html', error="Email address required"), 400
+    
+    try:
+        with engine.begin() as conn:
+            # Get count of alerts before unsubscribing
+            alert_count = conn.execute(
+                text("""
+                    SELECT COUNT(*) 
+                    FROM price_alerts 
+                    WHERE email = :email AND is_active = TRUE
+                """),
+                {'email': email}
+            ).scalar()
+            
+            # Mark all alerts as inactive
+            conn.execute(
+                text("""
+                    UPDATE price_alerts
+                    SET is_active = FALSE,
+                        updated_at = NOW()
+                    WHERE email = :email
+                """),
+                {'email': email}
+            )
+            
+            # Send confirmation email
+            try:
+                msg = Message(
+                    "You've been unsubscribed from all price alerts",
+                    recipients=[email]
+                )
+                msg.html = render_template(
+                    'unsubscribe_email.html',
+                    alert_count=alert_count,
+                    year=datetime.now().year,
+                    request={'host_url': current_app.config['BASE_URL']}
+                )
+                mail.send(msg)
+            except Exception as e:
+                current_app.logger.error(f"Failed to send unsubscribe email: {str(e)}")
+            
+            return render_template(
+                'unsubscribe_email.html',
+                alert_count=alert_count,
+                email=email,
+                success=True,
+                request={'host_url': current_app.config['BASE_URL']}
+            )
+                
+    except Exception as e:
+        current_app.logger.error(f"Failed to unsubscribe {email}: {str(e)}")
+        return render_template('unsubscribe_email.html', error="Failed to unsubscribe"), 500
 
 # Update the /create_comparison route in routes.py
 @main.route('/create_comparison', methods=['POST'])
@@ -1085,3 +1191,10 @@ def export_comparison():
     except Exception as e:
         log_error(f"Failed to export comparison {comparison_id}", e)
         return jsonify({'status': 'error', 'message': 'Export failed'}), 500
+    
+
+@main.route('/test_alert/<int:product_id>')
+def test_alert(product_id):
+    from app.price_alert_checker import check_price_alert_immediately
+    check_price_alert_immediately(product_id)
+    return jsonify({'status': 'success', 'message': 'Price alerts checked'})
