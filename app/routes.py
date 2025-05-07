@@ -2,35 +2,35 @@
 import csv
 import io
 import re
-from flask import Blueprint, make_response, redirect, render_template, request, jsonify, url_for
-import pandas as pd
-from sqlalchemy import create_engine, text
+import threading
+import time
+from datetime import datetime
 import json
 import os
 from subprocess import run, PIPE
-import threading
-import time
-from datetime import datetime, timedelta
-from flask_mail import Mail, Message
-from flask import current_app
+import pandas as pd
+from flask import Blueprint, make_response, redirect, render_template, request, jsonify, url_for, current_app
+from flask_mail import Message
+from sqlalchemy import create_engine, text
+from sqlalchemy.exc import SQLAlchemyError
+import logging
+
 from app import mail
-
-
-
 from app.price_alert_checker import check_price_alert_immediately
-
-
 from app.tempCodeRunnerFile import scrape_amazon_product_selenium
 from app.webscraping_Flipkart import scrape_flipkart_product
 
 main = Blueprint('main', __name__)
+logger = logging.getLogger(__name__)
 
-# Enhanced database connection with pool_pre_ping and echo for debugging
-DATABASE_URL = "postgresql://postgres:root@localhost:5432/CompareKart"
+# Database configuration with optimized settings
+DATABASE_URL = os.getenv('DATABASE_URL', "postgresql://postgres:root@localhost:5432/CompareKart")
 engine = create_engine(
     DATABASE_URL,
     pool_pre_ping=True,
-    echo=True,
+    pool_size=10,
+    max_overflow=20,
+    pool_timeout=30,
     connect_args={
         'connect_timeout': 10,
         'keepalives': 1,
@@ -41,12 +41,11 @@ engine = create_engine(
 )
 
 def log_error(message, error=None):
-    """Helper function for consistent error logging"""
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     error_msg = f"[{timestamp}] ERROR: {message}"
     if error:
         error_msg += f"\n{str(error)}"
-    print(error_msg)
+    logger.error(error_msg)
     return error_msg
 
 def get_next_sequence_id(connection):
@@ -66,117 +65,25 @@ def clean_price(price_str):
         log_error(f"Failed to clean price string: {price_str}", e)
         return 0.0
 
-# Update the update_product_data_periodically function in routes.py
-# At the top of routes.py with other imports
-from app.price_alert_checker import check_price_alert_immediately
-
-# ... rest of your imports ...
-
-def update_product_data_periodically():
-    while True:
-        try:
-            with engine.begin() as conn:  # This should auto-commit
-                # Check database connection first
-                try:
-                    conn.execute(text("SELECT 1"))
-                except Exception as e:
-                    log_error("Database connection check failed", e)
-                    time.sleep(60)
-                    continue
-
-                # Get products that need updating
-                products = conn.execute(text("""
-                    SELECT id, original_url FROM products 
-                    WHERE last_updated < NOW() - INTERVAL '12 hours' 
-                    OR last_updated IS NULL
-                    ORDER BY last_updated ASC NULLS FIRST
-                    LIMIT 10
-                """)).fetchall()
-
-                if not products:
-                    time.sleep(3600)
-                    continue
-                
-                for product in products:
-                    try:
-                        print(f"\nUpdating product ID: {product.id}")
-                        
-                        # Scrape product data
-                        if "flipkart.com" in product.original_url:
-                            product_data = scrape_flipkart_product(product.original_url)
-                        elif "amazon.in" in product.original_url:
-                            product_data = scrape_amazon_product_selenium(product.original_url)
-                        else:
-                            continue
-                        
-                        if not product_data:
-                            print(f"❌ Failed to scrape product {product.id}")
-                            continue
-                        
-                        # Prepare data with fallbacks
-                        cleaned_price = clean_price(product_data.get("Price"))
-                        cleaned_rating = clean_rating(product_data.get("Rating"))
-                        description = product_data.get("Description", "No description available")[:2000]
-                        delivery_time = product_data.get("Delivery Time", "Delivery time not specified")[:255]
-                        
-                        # Debug print before update
-                        print(f"Updating product {product.id} with:")
-                        print(f"Description: {description[:100]}...")
-                        print(f"Delivery Time: {delivery_time}")
-                        
-                        # Execute update
-                        result = conn.execute(text("""
-                            UPDATE products
-                            SET 
-                                name = COALESCE(:name, name),
-                                price = COALESCE(:price, price),
-                                rating = COALESCE(:rating, rating),
-                                description = :description,
-                                delivery_time = :delivery_time,
-                                last_updated = NOW()
-                            WHERE id = :id
-                            RETURNING description, delivery_time
-                        """), {
-                            "id": product.id,
-                            "name": product_data.get("Product Name"),
-                            "price": cleaned_price,
-                            "rating": cleaned_rating,
-                            "description": description,
-                            "delivery_time": delivery_time
-                        })
-                        
-                        # Verify the update
-                        updated = result.fetchone()
-                        print(f"✅ Updated product ID: {product.id}")
-                        print(f"Stored description: {updated.description[:100]}...")
-                        print(f"Stored delivery_time: {updated.delivery_time}")
-
-                        # Check price alerts immediately after successful update
-                        check_price_alert_immediately(product.id)
-                        
-                    except Exception as e:
-                        log_error(f"Error updating product {product.id}", e)
-                        # Add explicit rollback in case of error
-                        conn.rollback()
-                    
-                    time.sleep(10)
-                
-                time.sleep(600)
-
-        except Exception as e:
-            log_error("Error in update loop", e)
-            time.sleep(60)
-
-# Give the app time to initialize before starting the update thread
-time.sleep(5)
-update_thread = threading.Thread(target=update_product_data_periodically, daemon=True)
-update_thread.start()
+def clean_rating(rating_str):
+    if not rating_str:
+        return None
+    try:
+        match = re.search(r'(\d+\.\d+)', rating_str)
+        return float(match.group(1)) if match else None
+    except Exception as e:
+        log_error(f"Failed to clean rating string: {rating_str}", e)
+        return None
 
 @main.route('/')
 def index():
-    with engine.connect() as conn:
-        categories = conn.execute(text("SELECT id, name, icon FROM categories ORDER BY name")).fetchall()
-    return render_template('index.html', categories=categories)
+    try:
+        with engine.connect() as conn:
+            categories = conn.execute(text("SELECT id, name, icon FROM categories ORDER BY name")).fetchall()
+        return render_template('index.html', categories=categories)
+    except SQLAlchemyError as e:
+        log_error("Database error in index route", e)
+        return render_template('error.html'), 500
 
 @main.route('/product_display')
 def product_display():
@@ -203,7 +110,6 @@ def search():
             return jsonify({'status': 'error', 'message': 'No search query provided'}), 400
 
         with engine.connect() as connection:
-            # Search for products matching the query in name
             results = connection.execute(
                 text("""
                     SELECT id, name, price, rating, image_link 
@@ -256,7 +162,7 @@ def process_url():
         if not product_url:
             return jsonify({'status': 'error', 'message': 'No URL provided'}), 400
 
-        print(f"\nProcessing URL: {product_url}")
+        logger.info(f"Processing URL: {product_url}")
 
         with engine.begin() as connection:
             existing = connection.execute(
@@ -265,7 +171,7 @@ def process_url():
             ).fetchone()
             
             if existing:
-                print(f"✅ Found existing ID: {existing.id}")
+                logger.info(f"Found existing product ID: {existing.id}")
                 return jsonify({
                     'status': 'exists', 
                     'id': existing.id,
@@ -282,7 +188,7 @@ def process_url():
                 {"id": next_id, "url": product_url}
             ).fetchone()
             inserted_id = result[0]
-            print(f"✅ Inserted new product with ID: {inserted_id}")
+            logger.info(f"Inserted new product with ID: {inserted_id}")
 
             verify = connection.execute(
                 text("SELECT 1 FROM products WHERE id = :id"),
@@ -292,7 +198,7 @@ def process_url():
             if not verify:
                 raise Exception("Failed to verify product insertion")
 
-        print("\nRunning buyhatke_url.py...")
+        logger.info("Running buyhatke_url.py...")
         buyhatke_proc = run(["python", "./app/buyhatke_url.py", product_url], 
                            stdout=PIPE, stderr=PIPE, text=True, timeout=60)
         
@@ -302,7 +208,7 @@ def process_url():
 
         with open('temp.txt', 'r') as f:
             modified_url = f.read().strip()
-        print(f"Modified URL: {modified_url}")
+        logger.info(f"Modified URL: {modified_url}")
 
         with engine.begin() as connection:
             connection.execute(
@@ -310,7 +216,7 @@ def process_url():
                 {"url": modified_url, "id": inserted_id}
             )
 
-        print("\nRunning product_data.py...")
+        logger.info("Running product_data.py...")
         product_proc = run(["python", "./app/product_data.py", modified_url], 
                           stdout=PIPE, stderr=PIPE, text=True, timeout=60)
         
@@ -339,7 +245,7 @@ def process_url():
                     "id": inserted_id
                 })
 
-            print("✅ Product data saved successfully")
+            logger.info("Product data saved successfully")
             return jsonify({
                 'status': 'success',
                 'id': inserted_id,
@@ -396,7 +302,7 @@ def get_graph_data():
         if not product_id or not modified_url:
             return jsonify({'status': 'error', 'message': 'Missing parameters'}), 400
 
-        print(f"\nFetching graph data for product {product_id}")
+        logger.info(f"Fetching graph data for product {product_id}")
         
         graph_proc = run(
             ["python", "./app/graph.py", modified_url],
@@ -427,8 +333,6 @@ def get_graph_data():
         log_error("Error in get_graph_data", e)
         return jsonify({'status': 'error', 'message': 'Error fetching graph data'}), 500
 
-
-# Update the set_price_alert route
 @main.route('/set_price_alert', methods=['POST'])
 def set_price_alert():
     try:
@@ -444,7 +348,6 @@ def set_price_alert():
             return jsonify({'status': 'error', 'message': 'Invalid email format'}), 400
 
         with engine.begin() as conn:
-            # Check if product exists and get current price
             product = conn.execute(
                 text("""
                     SELECT name, price, image_link 
@@ -459,7 +362,6 @@ def set_price_alert():
             
             current_price = product.price if product.price else 0
             
-            # Check if price is already below desired price
             if current_price <= desired_price:
                 return jsonify({
                     'status': 'success',
@@ -467,7 +369,6 @@ def set_price_alert():
                     'already_below': True
                 })
             
-            # Check if alert already exists
             existing = conn.execute(
                 text("""
                     SELECT id, is_active 
@@ -484,7 +385,6 @@ def set_price_alert():
                         'message': 'You already have an active alert for this product'
                     }), 400
                 else:
-                    # Reactivate existing alert
                     conn.execute(
                         text("""
                             UPDATE price_alerts
@@ -498,7 +398,6 @@ def set_price_alert():
                     )
                     alert_id = existing.id
             else:
-                # Create new alert
                 result = conn.execute(
                     text("""
                         INSERT INTO price_alerts (
@@ -515,7 +414,6 @@ def set_price_alert():
                 ).fetchone()
                 alert_id = result[0]
 
-            # Send confirmation email
             try:
                 msg = Message(
                     f"Price Alert Set for {product.name}",
@@ -552,12 +450,10 @@ def set_price_alert():
         log_error("Failed to set price alert", e)
         return jsonify({'status': 'error', 'message': 'Failed to set alert'}), 500
 
-# Update the remove_price_alert route
 @main.route('/remove_price_alert/<int:alert_id>', methods=['GET', 'POST'])
 def remove_price_alert(alert_id):
     try:
         with engine.begin() as conn:
-            # Get alert details before updating
             result = conn.execute(
                 text("""
                     SELECT a.email, p.name, p.id as product_id 
@@ -571,7 +467,6 @@ def remove_price_alert(alert_id):
             if not result:
                 return render_template('alert_removed.html', error="Alert not found"), 404
 
-            # Mark as inactive
             conn.execute(
                 text("""
                     UPDATE price_alerts
@@ -582,7 +477,6 @@ def remove_price_alert(alert_id):
                 {'id': alert_id}
             )
 
-            # Send confirmation email
             try:
                 msg = Message(
                     f"Price Alert Removed: {result.name}",
@@ -598,7 +492,6 @@ def remove_price_alert(alert_id):
             except Exception as e:
                 current_app.logger.error(f"Failed to send alert removal email: {str(e)}")
 
-            # Return response
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return jsonify({
                     'status': 'success',
@@ -629,7 +522,6 @@ def unsubscribe():
     
     try:
         with engine.begin() as conn:
-            # Get count of alerts before unsubscribing
             alert_count = conn.execute(
                 text("""
                     SELECT COUNT(*) 
@@ -639,7 +531,6 @@ def unsubscribe():
                 {'email': email}
             ).scalar()
             
-            # Mark all alerts as inactive
             conn.execute(
                 text("""
                     UPDATE price_alerts
@@ -650,7 +541,6 @@ def unsubscribe():
                 {'email': email}
             )
             
-            # Send confirmation email
             try:
                 msg = Message(
                     "You've been unsubscribed from all price alerts",
@@ -678,7 +568,6 @@ def unsubscribe():
         current_app.logger.error(f"Failed to unsubscribe {email}: {str(e)}")
         return render_template('unsubscribe_email.html', error="Failed to unsubscribe"), 500
 
-# Update the /create_comparison route in routes.py
 @main.route('/create_comparison', methods=['POST'])
 def create_comparison():
     try:
@@ -692,9 +581,7 @@ def create_comparison():
         product_ids = [product_id]
         
         with engine.begin() as conn:
-            # Process each URL
             for url in urls:
-                # Check if product already exists
                 existing = conn.execute(
                     text("SELECT id FROM products WHERE original_url = :url"),
                     {"url": url}
@@ -704,7 +591,6 @@ def create_comparison():
                     product_ids.append(existing.id)
                     continue
                 
-                # Scrape new product based on URL domain
                 if "flipkart.com" in url:
                     product_data = scrape_flipkart_product(url)
                 elif "amazon.in" in url:
@@ -715,11 +601,9 @@ def create_comparison():
                 if not product_data:
                     continue
                 
-                # Clean and prepare data for database
                 price = clean_price(product_data.get("Price", "0"))
                 rating = clean_rating(product_data.get("Rating", "0"))
                 
-                # Insert new product
                 result = conn.execute(
                     text("""
                         INSERT INTO products (
@@ -759,7 +643,6 @@ def create_comparison():
                 
                 product_ids.append(result[0])
             
-            # Create comparison record
             result = conn.execute(
                 text("""
                     INSERT INTO comparisons (user_session, product_ids)
@@ -767,7 +650,7 @@ def create_comparison():
                     RETURNING id
                 """),
                 {
-                    "session": request.remote_addr,  # Simple session identifier
+                    "session": request.remote_addr,
                     "product_ids": product_ids
                 }
             ).fetchone()
@@ -781,31 +664,6 @@ def create_comparison():
     except Exception as e:
         log_error("Failed to create comparison", e)
         return jsonify({'status': 'error', 'message': 'Failed to create comparison'}), 500
-
-def clean_price(price_str):
-    if not price_str:
-        return None
-    try:
-        # Remove currency symbols and commas
-        numeric_str = re.sub(r'[^0-9.]', '', price_str)
-        return float(numeric_str)
-    except Exception as e:
-        log_error(f"Failed to clean price string: {price_str}", e)
-        return None
-
-def clean_rating(rating_str):
-    if not rating_str:
-        return None
-    try:
-        # Extract first number from rating string (e.g., "4.2 (1234)" -> 4.2)
-        match = re.search(r'(\d+\.\d+)', rating_str)
-        return float(match.group(1)) if match else None
-    except Exception as e:
-        log_error(f"Failed to clean rating string: {rating_str}", e)
-        return None
-    
-
-# Update the /compare_page route in routes.py
 
 @main.route('/compare_page')
 def compare_page():
@@ -873,7 +731,6 @@ def update_comparison():
             return jsonify({'status': 'error', 'message': 'Missing comparison ID'}), 400
         
         with engine.begin() as conn:
-            # Verify comparison exists
             comparison = conn.execute(
                 text("SELECT product_ids FROM comparisons WHERE id = :id"),
                 {"id": comparison_id}
@@ -884,7 +741,6 @@ def update_comparison():
                 
             current_products = comparison[0]
             
-            # Handle removal case (when new_url is None)
             if new_url is None:
                 if product_id is None:
                     return jsonify({'status': 'error', 'message': 'Product ID required for removal'}), 400
@@ -899,7 +755,6 @@ def update_comparison():
                 )
                 return jsonify({'status': 'success'})
             
-            # Handle adding new product
             if product_id == 0:
                 if len(current_products) >= 5:
                     return jsonify({'status': 'error', 'message': 'Maximum of 5 products allowed'}), 400
@@ -907,7 +762,6 @@ def update_comparison():
                 if not new_url:
                     return jsonify({'status': 'error', 'message': 'URL required to add product'}), 400
                     
-                # Check if product exists
                 existing = conn.execute(
                     text("SELECT id FROM products WHERE original_url = :url"),
                     {"url": new_url}
@@ -916,7 +770,6 @@ def update_comparison():
                 if existing:
                     new_product_id = existing.id
                 else:
-                    # Scrape new product
                     if "flipkart.com" in new_url:
                         product_data = scrape_flipkart_product(new_url) or {}
                     elif "amazon.in" in new_url:
@@ -924,7 +777,6 @@ def update_comparison():
                     else:
                         return jsonify({'status': 'error', 'message': 'Invalid URL'}), 400
                     
-                    # Insert new product
                     result = conn.execute(
                         text("""
                             INSERT INTO products (
@@ -951,7 +803,6 @@ def update_comparison():
                     ).fetchone()
                     new_product_id = result[0]
                 
-                # Update comparison
                 new_products = current_products + [new_product_id]
                 conn.execute(
                     text("UPDATE comparisons SET product_ids = :product_ids WHERE id = :id"),
@@ -959,7 +810,6 @@ def update_comparison():
                 )
                 return jsonify({'status': 'success'})
             
-            # Handle replacing product
             else:
                 if product_id is None:
                     return jsonify({'status': 'error', 'message': 'Product ID required for replacement'}), 400
@@ -970,7 +820,6 @@ def update_comparison():
                 if not new_url:
                     return jsonify({'status': 'error', 'message': 'URL required to replace product'}), 400
                 
-                # Check if new product exists
                 existing = conn.execute(
                     text("SELECT id FROM products WHERE original_url = :url"),
                     {"url": new_url}
@@ -979,7 +828,6 @@ def update_comparison():
                 if existing:
                     new_product_id = existing.id
                 else:
-                    # Scrape new product
                     if "flipkart.com" in new_url:
                         product_data = scrape_flipkart_product(new_url) or {}
                     elif "amazon.in" in new_url:
@@ -987,7 +835,6 @@ def update_comparison():
                     else:
                         return jsonify({'status': 'error', 'message': 'Invalid URL'}), 400
                     
-                    # Insert new product
                     result = conn.execute(
                         text("""
                             INSERT INTO products (
@@ -1014,7 +861,6 @@ def update_comparison():
                     ).fetchone()
                     new_product_id = result[0]
                 
-                # Update comparison
                 new_products = [new_product_id if pid == product_id else pid for pid in current_products]
                 conn.execute(
                     text("UPDATE comparisons SET product_ids = :product_ids WHERE id = :id"),
@@ -1025,7 +871,6 @@ def update_comparison():
     except Exception as e:
         log_error("Failed to update comparison", e)
         return jsonify({'status': 'error', 'message': 'Failed to update comparison'}), 500
-    
     
 @main.route('/get_similar_products', methods=['GET'])
 def get_similar_products():
@@ -1053,7 +898,6 @@ def get_similar_products():
 def get_products_by_category(category_id):
     try:
         with engine.connect() as conn:
-            # Get category name
             category = conn.execute(
                 text("SELECT name FROM categories WHERE id = :id"),
                 {"id": category_id}
@@ -1062,7 +906,6 @@ def get_products_by_category(category_id):
             if not category:
                 return jsonify({'status': 'error', 'message': 'Category not found'}), 404
             
-            # Get products in this category
             products = conn.execute(
                 text("""
                     SELECT id, name, price, rating, image_link 
@@ -1094,19 +937,16 @@ def get_products_by_category(category_id):
     except Exception as e:
         log_error(f"Failed to get products for category {category_id}", e)
         return jsonify({"status": "error", "message": "Internal server error"}), 500
-    
 
 @main.route('/test_db_write')
 def test_db_write():
     try:
         with engine.begin() as conn:
-            # Test writing to description and delivery_time
             test_data = {
                 "description": "This is a test description",
                 "delivery_time": "Test delivery time"
             }
             
-            # Update first product
             conn.execute(text("""
                 UPDATE products 
                 SET description = :desc, 
@@ -1119,7 +959,6 @@ def test_db_write():
                 "delivery": test_data["delivery_time"]
             })
             
-            # Verify update
             result = conn.execute(text("""
                 SELECT description, delivery_time 
                 FROM products 
@@ -1177,7 +1016,6 @@ def export_comparison():
                         'url': product.original_url
                     })
             
-            # Create CSV
             output = io.StringIO()
             writer = csv.DictWriter(output, fieldnames=products[0].keys())
             writer.writeheader()
@@ -1192,9 +1030,88 @@ def export_comparison():
         log_error(f"Failed to export comparison {comparison_id}", e)
         return jsonify({'status': 'error', 'message': 'Export failed'}), 500
     
-
 @main.route('/test_alert/<int:product_id>')
 def test_alert(product_id):
-    from app.price_alert_checker import check_price_alert_immediately
     check_price_alert_immediately(product_id)
     return jsonify({'status': 'success', 'message': 'Price alerts checked'})
+
+def update_product_data_periodically():
+    from app import create_app
+    app = create_app()
+    with app.app_context():
+        while True:
+            try:
+                with engine.begin() as conn:
+                    try:
+                        conn.execute(text("SELECT 1"))
+                    except Exception as e:
+                        log_error("Database connection check failed", e)
+                        time.sleep(60)
+                        continue
+
+                    products = conn.execute(text("""
+                        SELECT id, original_url FROM products 
+                        WHERE last_updated < NOW() - INTERVAL '12 hours' 
+                        OR last_updated IS NULL
+                        ORDER BY last_updated ASC NULLS FIRST
+                        LIMIT 10
+                    """)).fetchall()
+
+                    if not products:
+                        time.sleep(3600)
+                        continue
+
+                    for product in products:
+                        try:
+                            logger.info(f"Updating product ID: {product.id}")
+
+                            if "flipkart.com" in product.original_url:
+                                product_data = scrape_flipkart_product(product.original_url)
+                            elif "amazon.in" in product.original_url:
+                                product_data = scrape_amazon_product_selenium(product.original_url)
+                            else:
+                                continue
+
+                            if not product_data:
+                                logger.warning(f"Failed to scrape product {product.id}")
+                                continue
+
+                            cleaned_price = clean_price(product_data.get("Price"))
+                            cleaned_rating = clean_rating(product_data.get("Rating"))
+                            description = product_data.get("Description", "No description available")[:2000]
+                            delivery_time = product_data.get("Delivery Time", "Delivery time not specified")[:255]
+
+                            result = conn.execute(text("""
+                                UPDATE products
+                                SET 
+                                    name = COALESCE(:name, name),
+                                    price = COALESCE(:price, price),
+                                    rating = COALESCE(:rating, rating),
+                                    description = :description,
+                                    delivery_time = :delivery_time,
+                                    last_updated = NOW()
+                                WHERE id = :id
+                                RETURNING description, delivery_time
+                            """), {
+                                "id": product.id,
+                                "name": product_data.get("Product Name"),
+                                "price": cleaned_price,
+                                "rating": cleaned_rating,
+                                "description": description,
+                                "delivery_time": delivery_time
+                            })
+
+                            logger.info(f"Updated product ID: {product.id}")
+                            check_price_alert_immediately(product.id)
+
+                        except Exception as e:
+                            log_error(f"Error updating product {product.id}", e)
+                            conn.rollback()
+
+                        time.sleep(10)
+
+                    time.sleep(600)
+
+            except Exception as e:
+                log_error("Error in update loop", e)
+                time.sleep(60)
