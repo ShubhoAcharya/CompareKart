@@ -1,4 +1,5 @@
 CompareKart - Price Comparison Tool
+
 ![Screenshot](app/static/images/Screenshot2025-05-10204151.png)
 
 
@@ -49,3 +50,9 @@ GET /get_graph_data - Get price history graph data
 POST /set_price_alert - Set a price alert
 GET /compare_page - View comparison page
 GET /export_comparison - Export comparison data as CSV
+
+Screenshots
+![Screenshot](app/static/images/Screenshot2025-05-10204323.png)
+![Screenshot](app/static/images/Screenshot2025-05-08154122.png)
+![Screenshot](app/static/images/Screenshot2025-05-08232334.png)
+
