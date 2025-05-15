@@ -1,30 +1,50 @@
-<<<<<<< HEAD
-"# CompareKart"
+CompareKart - Price Comparison Tool
 
-Abstract for CompareKart Project
-Title: CompareKart - A Comprehensive Product Comparison Web Application
-In today's rapidly expanding e-commerce landscape, consumers face the challenge of navigating through a plethora of products across multiple platforms to make informed purchasing decisions. CompareKart addresses this need by providing a unified, user-friendly web application designed to streamline the product comparison process.
 
-Objective:
-The primary goal of CompareKart is to enable users to compare products from leading e-commerce websites such as Amazon, Flipkart, Snapdeal, Paytm Mall, and Myntra. By aggregating data from these platforms, CompareKart offers a comprehensive view of product features, prices, and availability, helping users to make well-informed decisions quickly and efficiently.
+CompareKart is a web application that helps users compare product prices across different e-commerce platforms like Amazon and Flipkart. It also provides price history tracking and alert features.
 
-Features:
-Search Functionality: Users can search for products using keywords, and CompareKart will retrieve relevant products from multiple e-commerce websites.
-Comparison Tool: A detailed comparison table highlights differences in price, features, and availability for each product across different platforms.
-Responsive Design: The application is designed to be fully responsive, ensuring a seamless experience across various devices, including desktops, tablets, and smartphones.
-User-Friendly Interface: The intuitive layout and navigation make it easy for users to find and compare products without any hassle.
-Scalability: Built with Flask, a lightweight web framework, CompareKart is designed to handle a growing number of users and product data efficiently.
-Technologies:
-Backend: Flask is used to handle the server-side operations, providing a robust and scalable backend infrastructure.
-Frontend: HTML, CSS, and JavaScript are employed to create a responsive and interactive user interface.
-Web Scraping: BeautifulSoup and Selenium are utilized to fetch and parse product data from various e-commerce websites.
-Data Management: SQLite is used for managing product data, ensuring quick and efficient data retrieval and storage.
-Impact:
-CompareKart aims to revolutionize the online shopping experience by reducing the time and effort required for product comparison. By providing a centralized platform for comparing products, it empowers consumers with the information they need to make better purchasing decisions, ultimately enhancing customer satisfaction and driving smarter shopping behaviors.
+Features
+🛒 Real-time price comparison between Amazon and Flipkart
+📈 Price history tracking with interactive graphs
+🔔 Price drop alerts via email
+📊 Product specifications comparison
+📤 Export comparison data to CSV
+🔄 Automatic price updates (every 12 hours)
 
-Future Scope:
-The project envisions expanding its capabilities to include more e-commerce platforms, user reviews and ratings, price drop alerts, and integration with AI-based recommendation engines to provide personalized shopping suggestions. Additionally, mobile application development is on the roadmap to cater to the growing number of mobile shoppers.
+Technology Stack
+Backend: Python with Flask
+Frontend: HTML, CSS, JavaScript
+Database: PostgreSQL
+Web Scraping: Selenium
+Email: Flask-Mail
+Scheduling: APScheduler
+Deployment: (Configure as needed)
 
-Conclusion:
-CompareKart is a pioneering effort to simplify the e-commerce shopping experience by providing a powerful product comparison tool. With its user-centric design and robust technology stack, CompareKart stands poised to become an indispensable tool for online shoppers, saving them time and money while ensuring they get the best deals available.
-=======
+
+Configuration
+The following environment variables need to be configured:
+
+MAIL_SERVER=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USE_TLS=true
+MAIL_USERNAME=your_email@gmail.com
+MAIL_PASSWORD=your_app_password
+MAIL_DEFAULT_SENDER=comparekart@example.com
+BASE_URL=http://localhost:5000
+DATABASE_URL=postgresql://username:password@localhost:5432/CompareKart
+
+
+Usage
+Visit http://localhost:5000 in your browser
+Enter a product URL from Amazon or Flipkart
+View price comparison and historical data
+Set price alerts for products
+
+
+API Endpoints
+POST /process_url - Process a product URL
+GET /get_product_details/<id> - Get product details
+GET /get_graph_data - Get price history graph data
+POST /set_price_alert - Set a price alert
+GET /compare_page - View comparison page
+GET /export_comparison - Export comparison data as CSV
