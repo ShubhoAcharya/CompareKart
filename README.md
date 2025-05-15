@@ -1,4 +1,5 @@
 CompareKart - Price Comparison Tool
+![Screenshot](./assets/screenshot.png)
 
 
 CompareKart is a web application that helps users compare product prices across different e-commerce platforms like Amazon and Flipkart. It also provides price history tracking and alert features.
